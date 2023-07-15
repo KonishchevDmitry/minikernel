@@ -23,9 +23,9 @@
         _print_cpu_info_loop:
             movl %esi, %eax
             cpuid
-            movl %eax, 0(%edi)
-            movl %ebx, 4(%edi)
-            movl %ecx, 8(%edi)
+            movl %eax,  0(%edi)
+            movl %ebx,  4(%edi)
+            movl %ecx,  8(%edi)
             movl %edx, 12(%edi)
 
             inc %esi
