@@ -2,6 +2,7 @@
 
 * BIOS interrupts - http://www.ctyme.com/intr/int.htm
 * x86 instructions - https://www.felixcloutier.com/x86/
+* GNU as manual - https://sourceware.org/binutils/docs-2.40/as.html
 
 ### Registers
 
