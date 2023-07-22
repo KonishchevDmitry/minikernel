@@ -2,26 +2,26 @@
     // void prints(const char* s)
     .global prints
     prints:
-        pushl %ebx
-        movl 8(%esp), %ebx # current data pointer
+        pushl %esi
+        movl 8(%esp), %esi # current data pointer
 
         sub $4, %esp # current symbol
 
         _prints_loop:
-            movzxb (%ebx), %eax
+            lodsb
 
-            cmpl $0, %eax
+            cmpb $0, %al
             je _prints_return
 
+            movzxb %al, %eax
             mov %eax, (%esp)
             call printc
 
-            inc %ebx
             jmp _prints_loop
 
         _prints_return:
             add $4, %esp
-            popl %ebx
+            popl %esi
             ret
 
     // void printf(const char* format, ...)
@@ -44,58 +44,59 @@
     // void printfw(void* _, const char* format, ...)
     .global printfw
     printfw:
-        pushl %ebx
         pushl %esi
+        pushl %ebx
 
-        movl 16(%esp), %ebx # current format string pointer
-        leal 20(%esp), %esi # current argument pointer
+        movl 16(%esp), %esi # current format string pointer
+        leal 20(%esp), %ebx # current argument pointer
 
         sub $4, %esp # current symbol
 
         _printfw_loop:
-            movzxb (%ebx), %eax
-            inc %ebx
+            cld
+            lodsb
 
-            cmpl $0, %eax
+            cmpb $0, %al
             je _printfw_return
 
-            cmpl $'%', %eax
+            cmpb $'%', %al
             je _printfw_format
 
         _printfw_char:
+            movzxb %al, %eax
             mov %eax, (%esp)
             call printc
             jmp _printfw_loop
 
         _printfw_format:
-            movzxb (%ebx), %eax
-            inc %ebx
+            cld
+            lodsb
 
-            cmpl $0, %eax
+            cmpb $0, %al
             je _printfw_return
 
-            cmpl $'s', %eax
+            cmpb $'s', %al
             je _printfw_string
 
-            cmpl $'%', %eax
+            cmpb $'%', %al
             je _printfw_char
 
             jmp _printfw_error
 
         _printfw_string:
-            movl (%esi), %eax
-            add $4, %esi
+            movl (%ebx), %eax
+            add $4, %ebx
             movl %eax, (%esp)
             call prints
             jmp _printfw_loop
 
         _printfw_error:
-            subl $2, %ebx
-            movl %ebx, (%esp)
+            subl $2, %esi
+            movl %esi, (%esp)
             call prints
 
         _printfw_return:
             add $4, %esp
-            popl %esi
             popl %ebx
+            popl %esi
             ret
