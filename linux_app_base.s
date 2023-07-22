@@ -3,6 +3,18 @@
     _start:
         call print_cpu_info
 
+        pushl $test_format_arg_3
+        pushl $test_format_arg_2
+        pushl $test_format_arg_1
+        pushl $test_format_string
+        call printlnf
+
+        pushl $test_format_arg_3
+        pushl $test_format_arg_2
+        pushl $test_format_arg_1
+        pushl $test_format_error
+        call printlnf
+
         pushl $0
         call exit
 
@@ -66,6 +78,13 @@
     running_on_message: .asciz "Running on %s"
     unsupported_cpu_message: .asciz "Unsupported CPU"
     error_message_prefix: .asciz "Error: "
+
+    test_format_string: .asciz "Test formatting: %s, %s, %% (percent), %s"
+    test_format_arg_1: .asciz "one"
+    test_format_arg_2: .asciz "two"
+    test_format_arg_3: .asciz "three"
+
+    test_format_error: .asciz "Test format error: %s, %s, %e (invalid), %s"
 
 .section .bss
     cpu_name: .zero 48
