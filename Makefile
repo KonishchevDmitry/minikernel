@@ -8,8 +8,8 @@ endif
 LD_FLAGS := -m elf_i386
 
 all: linux-app linux-stdlib-app
-	./linux-app
-	./linux-stdlib-app
+	./linux-app --arg value
+	./linux-stdlib-app --arg value
 
 $(wildcard *.o): Makefile
 

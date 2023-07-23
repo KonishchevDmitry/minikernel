@@ -1,6 +1,10 @@
 .section .text
     .global _start
     _start:
+        pushl $0
+        call print_args_and_env
+        addl $4, %esp
+
         call print_cpu_info
 
         pushl $0xFFFFFFFF
@@ -23,6 +27,66 @@
         pushl $0
         call exit
 
+    // void print_args_and_env(bool print_env)
+    .type print_args_and_env, @function
+    print_args_and_env:
+        pushl %esi
+
+        leal 16(%esp), %esi # argv list is preceded by argc value
+        subl $4, %esp       # print arg
+
+        movl $running_message, (%esp)
+        call prints
+
+        _print_args_and_env_args_loop:
+            cmpl $0, (%esi)
+            je _print_args_and_env
+
+            movl $' ', (%esp)
+            call printc
+
+            movl (%esi), %eax
+            movl %eax, (%esp)
+            call prints
+
+            addl $4, %esi
+            jmp _print_args_and_env_args_loop
+
+        _print_args_and_env:
+            movl $'\n', (%esp)
+            call printc
+
+            cmpl $1, 12(%esp) # print_env
+            jne _print_args_and_env_return
+
+            movl $environment_message, (%esp)
+            call printlnf
+
+            addl $4, %esi
+
+        _print_args_and_env_env_loop:
+            cmpl $0, (%esi)
+            je _print_args_and_env_return
+
+            movl $list_prefix, (%esp)
+            call prints
+
+            movl (%esi), %eax
+            movl %eax, (%esp)
+            call prints
+
+            movl $'\n', (%esp)
+            call printc
+
+            addl $4, %esi
+            jmp _print_args_and_env_env_loop
+
+        _print_args_and_env_return:
+            addl $4, %esp
+            popl %esi
+            ret
+
+    // void print_cpu_info()
     .type print_cpu_info, @function
     print_cpu_info:
         push %ebx
@@ -82,8 +146,13 @@
         call exit
 
 .section .rodata
+    running_message: .asciz "Running:"
+    environment_message: .asciz "Environment:"
+
     running_on_message: .asciz "Running on %s"
     unsupported_cpu_message: .asciz "Unsupported CPU"
+
+    list_prefix: .asciz "* "
     error_message_prefix: .asciz "Error: "
 
     test_format_string: .asciz "Test formatting: %s=%d, %s=%d, %% (percent), %s=%d"
