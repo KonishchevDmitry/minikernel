@@ -18,6 +18,7 @@
         pushl $0
         call exit
 
+    .type print_cpu_info, @function
     print_cpu_info:
         push %ebx
         push %edi
@@ -61,6 +62,7 @@
             call die
 
     // void die(const char* format, ...)
+    .type die, @function
     die:
         pushl $error_message_prefix
         call prints

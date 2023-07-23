@@ -1,6 +1,7 @@
 .section .text
     // void printc(int c)
     .globl printc
+    .type printc, @function
     printc:
         push %ebx
 
@@ -15,6 +16,7 @@
 
     // void exit(int status)
     .global exit
+    .type exit, @function
     exit:
         movl $SYSCALL_EXIT, %eax
         movl 4(%esp), %ebx

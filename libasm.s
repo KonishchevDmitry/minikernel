@@ -1,6 +1,7 @@
 .section .text
     // void prints(const char* s)
     .global prints
+    .type prints, @function
     prints:
         pushl %esi
         movl 8(%esp), %esi # current data pointer
@@ -26,12 +27,14 @@
 
     // void printf(const char* format, ...)
     .global printf
+    .type printf, @function
     printf:
         call printfw
         ret
 
     // void printlnf(const char* format, ...)
     .global printlnf
+    .type printlnf, @function
     printlnf:
         call printfw
 
@@ -43,6 +46,7 @@
 
     // void printfw(void* _, const char* format, ...)
     .global printfw
+    .type printfw, @function
     printfw:
         pushl %esi
         pushl %ebx
