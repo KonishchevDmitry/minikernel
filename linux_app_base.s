@@ -8,12 +8,14 @@
         pushl $test_format_arg_1
         pushl $test_format_string
         call printlnf
+        addl $16, %esp
 
         pushl $test_format_arg_3
         pushl $test_format_arg_2
         pushl $test_format_arg_1
         pushl $test_format_error
         call printlnf
+        addl $16, %esp
 
         pushl $0
         call exit
