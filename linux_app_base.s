@@ -3,19 +3,22 @@
     _start:
         call print_cpu_info
 
-        pushl $test_format_arg_3
-        pushl $test_format_arg_2
-        pushl $test_format_arg_1
+        pushl $0xFFFFFFFF
+        pushl $test_format_arg_uint_max
+        pushl $123
+        pushl $test_format_arg_123
+        pushl $0
+        pushl $test_format_arg_zero
         pushl $test_format_string
         call printlnf
-        addl $16, %esp
+        addl $(7 * 4), %esp
 
-        pushl $test_format_arg_3
-        pushl $test_format_arg_2
-        pushl $test_format_arg_1
+        pushl $test_format_arg_uint_max
+        pushl $test_format_arg_123
+        pushl $test_format_arg_zero
         pushl $test_format_error
         call printlnf
-        addl $16, %esp
+        addl $(4 * 4), %esp
 
         pushl $0
         call exit
@@ -83,12 +86,12 @@
     unsupported_cpu_message: .asciz "Unsupported CPU"
     error_message_prefix: .asciz "Error: "
 
-    test_format_string: .asciz "Test formatting: %s, %s, %% (percent), %s"
-    test_format_arg_1: .asciz "one"
-    test_format_arg_2: .asciz "two"
-    test_format_arg_3: .asciz "three"
+    test_format_string: .asciz "Test formatting: %s=%d, %s=%d, %% (percent), %s=%d"
+    test_format_arg_zero: .asciz "zero"
+    test_format_arg_123: .asciz "123"
+    test_format_arg_uint_max: .asciz "4294967295"
 
-    test_format_error: .asciz "Test format error: %s, %s, %e (invalid), %s"
+    test_format_error: .asciz "Test format error: zero=%s, 123=%s, %e (invalid), %s (invalid)"
 
 .section .bss
     cpu_name: .zero 48

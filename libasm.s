@@ -60,11 +60,11 @@
             cld
             lodsb
 
-            cmpb $0, %al
-            je _printfw_return
-
             cmpb $'%', %al
             je _printfw_format
+
+            cmpb $0, %al
+            je _printfw_return
 
         _printfw_char:
             movzxb %al, %eax
@@ -76,11 +76,11 @@
             cld
             lodsb
 
-            cmpb $0, %al
-            je _printfw_return
-
             cmpb $'s', %al
             je _printfw_string
+
+            cmpb $'d', %al
+            je _printfw_decimal
 
             cmpb $'%', %al
             je _printfw_char
@@ -94,6 +94,13 @@
             call prints
             jmp _printfw_loop
 
+        _printfw_decimal:
+            movl (%ebx), %eax
+            add $4, %ebx
+            movl %eax, (%esp)
+            call printd
+            jmp _printfw_loop
+
         _printfw_error:
             subl $2, %esi
             movl %esi, (%esp)
@@ -103,4 +110,35 @@
             add $4, %esp
             popl %ebx
             popl %esi
+            ret
+
+    // void printd(int value)
+    .type printd, @function
+    printd:
+        enterl $0, $0
+
+        movl 8(%esp), %eax # value
+        movl $10, %ecx     # divisor
+
+        _printd_backward_loop:
+            movl $0, %edx
+            divl %ecx
+
+            pushl %edx
+
+            cmpl $0, %eax
+            jne _printd_backward_loop
+
+        _printd_forward_loop:
+            movl $'0', %eax
+            addl %eax, (%esp)
+
+            call printc
+            addl $4, %esp
+
+            cmpl %esp, %ebp
+            jne _printd_forward_loop
+
+        _printd_ret:
+            leavel
             ret
