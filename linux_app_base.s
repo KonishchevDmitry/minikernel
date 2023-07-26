@@ -146,21 +146,21 @@
         call exit
 
 .section .rodata
-    running_message: .asciz "Running:"
-    environment_message: .asciz "Environment:"
+    running_message: .string "Running:"
+    environment_message: .string "Environment:"
 
-    running_on_message: .asciz "Running on %s"
-    unsupported_cpu_message: .asciz "Unsupported CPU"
+    running_on_message: .string "Running on %s"
+    unsupported_cpu_message: .string "Unsupported CPU"
 
-    list_prefix: .asciz "* "
-    error_message_prefix: .asciz "Error: "
+    list_prefix: .string "* "
+    error_message_prefix: .string "Error: "
 
-    test_format_string: .asciz "Test formatting: %s=%d, %s=%d, %% (percent), %s=%d"
-    test_format_arg_zero: .asciz "zero"
-    test_format_arg_123: .asciz "123"
-    test_format_arg_uint_max: .asciz "4294967295"
+    test_format_string: .string "Test formatting: %s=%d, %s=%d, %% (percent), %s=%d"
+    test_format_arg_zero: .string "zero"
+    test_format_arg_123: .string "123"
+    test_format_arg_uint_max: .string "4294967295"
 
-    test_format_error: .asciz "Test format error: zero=%s, 123=%s, %e (invalid), %s (invalid)"
+    test_format_error: .string "Test format error: zero=%s, 123=%s, %e (invalid), %s (invalid)"
 
 .section .bss
     cpu_name: .zero 48

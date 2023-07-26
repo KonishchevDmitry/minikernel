@@ -1,11 +1,11 @@
 .PHONY: all clean
 
-AS_FLAGS := --32
+ASFLAGS := -c -m32
 ifdef DEBUG
-AS_FLAGS := $(AS_FLAGS) -gstabs
+ASFLAGS := $(ASFLAGS) -g
 endif
 
-LD_FLAGS := -m elf_i386
+LDFLAGS := -m elf_i386
 
 all: linux-app linux-stdlib-app
 	./linux-app --arg value
@@ -14,23 +14,23 @@ all: linux-app linux-stdlib-app
 $(wildcard *.o): Makefile
 
 linux-app: linux_app.o linux_app_base.o libasm.o
-	ld $(LD_FLAGS) -o $@ $^
+	ld $(LDFLAGS) -o $@ $^
 
-linux_app.o: linux_app.s
-	as $(AS_FLAGS) -o $@ $<
+linux_app.o: linux_app.S
+	gcc $(ASFLAGS) -o $@ $<
 
 # Requires gcc-multilib package
 linux-stdlib-app: linux_stdlib_app.o linux_app_base.o libasm.o
-	ld $(LD_FLAGS) -dynamic-linker /lib/ld-linux.so.2 -o $@ $^ -lc
+	ld $(LDFLAGS) -dynamic-linker /lib/ld-linux.so.2 -o $@ $^ -lc
 
 linux_stdlib_app.o: linux_stdlib_app.s
-	as $(AS_FLAGS) -o $@ $<
+	gcc $(ASFLAGS) -o $@ $<
 
 linux_app_base.o: linux_app_base.s
-	as $(AS_FLAGS) -o $@ $<
+	gcc $(ASFLAGS) -o $@ $<
 
 libasm.o: libasm.s
-	as $(AS_FLAGS) -o $@ $<
+	gcc $(ASFLAGS) -o $@ $<
 
 clean:
-	rm -f *.o linux-app linix-stdlib-app
+	rm -f *.o linux-app linux-stdlib-app

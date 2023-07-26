@@ -54,5 +54,3 @@ Print memory – `x/nyz &label`:
 * `n` – count
 * `y` – c/d/x
 * `z` – b (byte), h (2 bytes), w (4 bytes)
-
-To debug assembly programs they should be compiled with `-gstabs`.
