@@ -1,36 +1,60 @@
-.PHONY: all clean
+.PHONY: all boot clean debug gdb-boot test
 
-ASFLAGS := -c -m32
-ifdef DEBUG
-ASFLAGS := $(ASFLAGS) -g
-endif
-
+ASFLAGS := -c -g -m32
 LDFLAGS := -m elf_i386
+BOOT_CMD := qemu-system-i386 -drive file=bin/disk.img,format=raw -display curses -monitor stdio
 
-all: linux-app linux-stdlib-app
-	./linux-app --arg value
-	./linux-stdlib-app --arg value
+all: test boot
 
-$(wildcard *.o): Makefile
+$(wildcard bin/*.o): Makefile
 
-linux-app: linux_app.o linux_app_base.o libasm.o
+test: bin/linux-app bin/linux-stdlib-app
+	./bin/linux-app --arg value
+	./bin/linux-stdlib-app --arg value
+
+boot: bin/disk.img
+	$(BOOT_CMD)
+
+debug: bin/disk.img
+	$(BOOT_CMD) -S -gdb unix:bin/gdb.socket,server,nowait
+
+gdb-boot:
+	gdb --quiet --symbols bin/bootloader --command debug.gdb
+
+bin/disk.img: bin/bootloader.bin
+	@size="$$(stat --printf=%s bin/bootloader.bin)"; [ "$$size" -eq 512 ] || { echo "Invalid bootloader size: $$size" >&2; exit 1; }
+	dd seek=0 count=1 if=bin/bootloader.bin of=bin/disk.img
+
+bin/bootloader.bin: bin/bootloader
+	objcopy -O binary $< $@
+
+bin/bootloader: bin/bootloader.o | bin
+	ld $(LDFLAGS) --section-start=.text=0x7c00 -o $@ $^
+
+bin/bootloader.o: bootloader.s | bin
+	gcc $(ASFLAGS) -o $@ $<
+
+bin/linux-app: bin/linux_app.o bin/linux_app_base.o bin/libasm.o
 	ld $(LDFLAGS) -o $@ $^
 
-linux_app.o: linux_app.S
+bin/linux_app.o: linux_app.S | bin
 	gcc $(ASFLAGS) -o $@ $<
 
 # Requires gcc-multilib package
-linux-stdlib-app: linux_stdlib_app.o linux_app_base.o libasm.o
+bin/linux-stdlib-app: bin/linux_stdlib_app.o bin/linux_app_base.o bin/libasm.o
 	ld $(LDFLAGS) -dynamic-linker /lib/ld-linux.so.2 -o $@ $^ -lc
 
-linux_stdlib_app.o: linux_stdlib_app.s
+bin/linux_stdlib_app.o: linux_stdlib_app.s | bin
 	gcc $(ASFLAGS) -o $@ $<
 
-linux_app_base.o: linux_app_base.s
+bin/linux_app_base.o: linux_app_base.s | bin
 	gcc $(ASFLAGS) -o $@ $<
 
-libasm.o: libasm.s
+bin/libasm.o: libasm.s | bin
 	gcc $(ASFLAGS) -o $@ $<
+
+bin:
+	[ -d bin ] || mkdir bin
 
 clean:
-	rm -f *.o linux-app linux-stdlib-app
+	rm -rf ./bin

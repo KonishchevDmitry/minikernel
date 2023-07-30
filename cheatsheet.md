@@ -36,7 +36,7 @@ EAX, ECX, EDX may be modified by callee.
 
 `base(offset, index, size)` -> `base + offset + index * size`
 
-If any of the values are zero, they can be omitted (but the commas are still required as placeholders). The `offset` and `index` must be registers, but the `size` can be a numerical value.
+If any of the values are zero, they can be omitted (but the commas are still required as placeholders). The `offset` and `index` must be registers, but the `size` can be a numerical value (1, 2, 4, 8).
 
 
 ### GDB
