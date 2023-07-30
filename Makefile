@@ -29,9 +29,9 @@ bin/bootloader.bin: bin/bootloader
 	objcopy -O binary $< $@
 
 bin/bootloader: bin/bootloader.o | bin
-	ld $(LDFLAGS) --section-start=.text=0x7c00 -o $@ $^
+	ld $(LDFLAGS) --section-start=.text=0x7C00 -o $@ $^
 
-bin/bootloader.o: bootloader.s | bin
+bin/bootloader.o: bootloader.s libasm.s | bin
 	gcc $(ASFLAGS) -o $@ $<
 
 bin/linux-app: bin/linux_app.o bin/linux_app_base.o bin/libasm.o
