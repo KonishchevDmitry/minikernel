@@ -33,7 +33,7 @@ bin/bootloader.bin: bin/bootloader
 bin/bootloader: bin/bootloader.o
 	ld $(LDFLAGS) --section-start=.text=0x7C00 -o $@ $^
 
-bin/bootloader.o: bootloader.s libasm.s | bin
+bin/bootloader.o: bootloader.S libasm.S | bin
 	gcc $(ASFLAGS) -o $@ $<
 
 bin/kernel.img: bin/kernel.bin
@@ -70,8 +70,8 @@ bin/linux_stdlib_app.o: linux_stdlib_app.s | bin
 bin/linux_app_base.o: linux_app_base.s | bin
 	gcc $(ASFLAGS) -o $@ $<
 
-bin/libasm.o: libasm.s | bin
-	gcc $(ASFLAGS) -o $@ $<
+bin/libasm.o: libasm.S | bin
+	gcc $(ASFLAGS) -D ARCH_BITS=32 -o $@ $<
 
 bin:
 	[ -d bin ] || mkdir bin
