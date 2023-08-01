@@ -11,13 +11,13 @@
         push %ebx
 
         _printc_write:
-            movl $SYS_write, %eax
-            movl $1, %ebx
-            leal 8(%esp), %ecx
-            movl $1, %edx
+            mov $SYS_write, %eax
+            mov $1, %ebx
+            lea 8(%esp), %ecx
+            mov $1, %edx
             int $SYSCALL_INT
 
-            cmpl $-EINTR, %eax
+            cmp $-EINTR, %eax
             je _printc_write
 
         pop %ebx
@@ -27,6 +27,6 @@
     .global exit
     .type exit, @function
     exit:
-        movl $SYS_exit, %eax
-        movl 4(%esp), %ebx
+        mov $SYS_exit, %eax
+        mov 4(%esp), %ebx
         int $SYSCALL_INT

@@ -1,89 +1,89 @@
 .section .text
     .global _start
     _start:
-        pushl $0
+        push $0
         call print_args_and_env
-        addl $4, %esp
+        add $4, %esp
 
         call print_cpu_info
 
-        pushl $0xFFFFFFFF
-        pushl $test_format_arg_uint_max
-        pushl $123
-        pushl $test_format_arg_123
-        pushl $0
-        pushl $test_format_arg_zero
-        pushl $test_format_string
+        push $0xFFFFFFFF
+        push $test_format_arg_uint_max
+        push $123
+        push $test_format_arg_123
+        push $0
+        push $test_format_arg_zero
+        push $test_format_string
         call printlnf
-        addl $(7 * 4), %esp
+        add $(7 * 4), %esp
 
-        pushl $test_format_arg_uint_max
-        pushl $test_format_arg_123
-        pushl $test_format_arg_zero
-        pushl $test_format_error
+        push $test_format_arg_uint_max
+        push $test_format_arg_123
+        push $test_format_arg_zero
+        push $test_format_error
         call printlnf
-        addl $(4 * 4), %esp
+        add $(4 * 4), %esp
 
-        pushl $0
+        push $0
         call exit
 
     // void print_args_and_env(bool print_env)
     .type print_args_and_env, @function
     print_args_and_env:
-        pushl %esi
+        push %esi
 
-        leal 16(%esp), %esi # argv list is preceded by argc value
-        subl $4, %esp       # print arg
+        lea 16(%esp), %esi # argv list is preceded by argc value
+        sub $4, %esp       # print arg
 
-        movl $running_message, (%esp)
+        mov $running_message, (%esp)
         call prints
 
         _print_args_and_env_args_loop:
-            cmpl $0, (%esi)
+            cmp $0, (%esi)
             je _print_args_and_env
 
-            movl $' ', (%esp)
+            mov $' ', (%esp)
             call printc
 
-            movl (%esi), %eax
-            movl %eax, (%esp)
+            mov (%esi), %eax
+            mov %eax, (%esp)
             call prints
 
-            addl $4, %esi
+            add $4, %esi
             jmp _print_args_and_env_args_loop
 
         _print_args_and_env:
-            movl $'\n', (%esp)
+            mov $'\n', (%esp)
             call printc
 
-            cmpl $1, 12(%esp) # print_env
+            cmp $1, 12(%esp) # print_env
             jne _print_args_and_env_return
 
-            movl $environment_message, (%esp)
+            mov $environment_message, (%esp)
             call printlnf
 
-            addl $4, %esi
+            add $4, %esi
 
         _print_args_and_env_env_loop:
-            cmpl $0, (%esi)
+            cmp $0, (%esi)
             je _print_args_and_env_return
 
-            movl $list_prefix, (%esp)
+            mov $list_prefix, (%esp)
             call prints
 
-            movl (%esi), %eax
-            movl %eax, (%esp)
+            mov (%esi), %eax
+            mov %eax, (%esp)
             call prints
 
-            movl $'\n', (%esp)
+            mov $'\n', (%esp)
             call printc
 
-            addl $4, %esi
+            add $4, %esi
             jmp _print_args_and_env_env_loop
 
         _print_args_and_env_return:
-            addl $4, %esp
-            popl %esi
+            add $4, %esp
+            pop %esi
             ret
 
     // void print_cpu_info()
@@ -96,19 +96,19 @@
         mov $0x80000000, %eax
         cpuid
 
-        cmpl $0xF80000004, %eax
+        cmp $0xF80000004, %eax
         jb _unsupported_cpu
 
-        movl $0x80000002, %esi
-        movl $cpu_name, %edi
+        mov $0x80000002, %esi
+        mov $cpu_name, %edi
 
         _print_cpu_info_loop:
-            movl %esi, %eax
+            mov %esi, %eax
             cpuid
-            movl %eax,  0(%edi)
-            movl %ebx,  4(%edi)
-            movl %ecx,  8(%edi)
-            movl %edx, 12(%edi)
+            mov %eax,  0(%edi)
+            mov %ebx,  4(%edi)
+            mov %ecx,  8(%edi)
+            mov %edx, 12(%edi)
 
             inc %esi
             add $16, %edi
@@ -116,10 +116,10 @@
             cmpl $0x80000004, %esi
             jbe _print_cpu_info_loop
 
-        pushl $cpu_name
-        pushl $running_on_message
+        push $cpu_name
+        push $running_on_message
         call printlnf
-        addl $8, %esp
+        add $8, %esp
 
         pop %esi
         pop %edi
@@ -133,16 +133,16 @@
     // void die(const char* format, ...)
     .type die, @function
     die:
-        pushl $error_message_prefix
+        push $error_message_prefix
         call prints
         add $4, %esp
 
-        call printfw
+        call printf_inner
 
-        pushl $'\n'
+        push $'\n'
         call printc
 
-        movl $1, %esp
+        mov $1, %esp
         call exit
 
 .section .rodata
