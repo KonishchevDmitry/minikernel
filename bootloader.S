@@ -11,7 +11,24 @@ _start:
     call printlnf
     add $4, %sp
 
+    call load_kernel
+
+    push $_stop_execution_message
+    call printlnf
+    jmp halt
+
+    _greeting_message: .string "Bootloader is running (size=%d)..."
+
+    // FIXME(konishchev): Drop it
+    _stop_execution_message: .string "Stopping the execution."
+
+// void load_kernel()
+load_kernel:
+    push $0 # buffer offset
+    push $1 # count
+    push $1 # start sector
     call read_disk
+    add $6, %sp
 
     mov kernel_size, %ax
     push %ax
@@ -19,29 +36,63 @@ _start:
     call printlnf
     add $4, %sp
 
-    push $_stop_execution_message
-    call printlnf
-    jmp halt
+    call get_kernel_sectors
+    dec %ax
+    jz _load_kernel_return
 
-    _greeting_message: .string "Bootloader is running (size=%d)..."
+    push $512 # buffer offset
+    push %ax  # count
+    push $2   # start sector
+    call read_disk
+    add $6, %sp
+
+    _load_kernel_return:
+        ret
+
     _kernel_loading_message: .string "Loading kernel (size=%d)..."
 
-    // FIXME(konishchev): Drop it
-    _stop_execution_message: .string "Stopping the execution."
+// int get_kernel_sectors()
+get_kernel_sectors:
+    xor %dx, %dx
+    mov kernel_size, %ax
+    mov $512, %cx
+    div %cx
 
-// FIXME(konishchev): Rewrite
+    cmp $0, %dx
+    je _get_kernel_sector_return
+    inc %ax
+
+    _get_kernel_sector_return:
+        ret
+
+// void read_disk(int start_sector, int sector_count, int buffer_offset)
 read_disk:
-    // https://en.wikipedia.org/wiki/INT_13H
+    enter $0, $0
+    push %si
+
+    mov 8(%bp), %ax
+    mov %ax, _read_disk_memory_offset
+
+    mov 6(%bp), %ax
+    mov %ax, _read_disk_sector_count
+
+    mov 4(%bp), %ax
+    mov %ax, _read_disk_start_sector
+
+    // https://wiki.osdev.org/ATA_in_x86_RealMode_(BIOS)
     mov $0x42, %ah # Extended Read Sectors From Drive
     mov $0x80, %dl # First HDD
-    mov $_disk_address_packet, %si
+    mov $_read_disk_address_packet, %si
     int $0x13
     jc _read_disk_error
 
+    pop %si
+    leave
     ret
 
     _read_disk_error:
-        movzxb %ah, %ax
+        movzx %ah, %ax
+
         push %ax
         push $_read_disk_error_message
         call printlnf
@@ -50,21 +101,22 @@ read_disk:
         _read_disk_error_message: .string "Disk read error (code=%d)"
 
     .align 4
-    _disk_address_packet:
-        .byte 16     # size
-        .byte 0      # padding
-        .word 1      # count
-        .word 0x7E00 # memory offset
-        .word 0      # memory segment
-        start_sector:
-        .quad 1      # sector to start from
+    _read_disk_address_packet:
+        .byte 16    # size
+        .byte 0     # padding
+        _read_disk_sector_count:
+        .word 0     # count (limited to 127, but it's the exact limit on our kernel size, taking into account the separate reading of first sector)
+        _read_disk_memory_offset:
+        .word 0     # memory offset
+        .word 0x7E0 # memory segment ((0x7C00 + 512) >> 4)
+        _read_disk_start_sector:
+        .quad 0     # sector to start from
 
 // void printc(int c)
-.type printc, @function
 printc:
     enter $0, $0
 
-    cmp $'\n', 4(%bp)
+    cmpw $'\n', 4(%bp)
     je _printc_cr
 
     _printc:
