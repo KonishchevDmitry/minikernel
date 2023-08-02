@@ -12,15 +12,9 @@ _start:
     add $4, %sp
 
     call load_kernel
-
-    push $_stop_execution_message
-    call printlnf
-    jmp halt
+    jmp kernel_start + 2
 
     _greeting_message: .string "Bootloader is running (size=%d)..."
-
-    // FIXME(konishchev): Drop it
-    _stop_execution_message: .string "Stopping the execution."
 
 // void load_kernel()
 load_kernel:
@@ -47,9 +41,13 @@ load_kernel:
     add $6, %sp
 
     _load_kernel_return:
+        push $_kernel_loaded_message
+        call printlnf
+        add $2, %sp
         ret
 
     _kernel_loading_message: .string "Loading kernel (size=%d)..."
+    _kernel_loaded_message: .string "Kernel loaded."
 
 // int get_kernel_sectors()
 get_kernel_sectors:
