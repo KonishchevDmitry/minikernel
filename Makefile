@@ -28,15 +28,6 @@ bin/disk.img: bin/bootloader.bin bin/kernel.img
 	@size="$$(stat --printf=%s bin/bootloader.bin)"; [ "$$size" -eq 512 ] || { echo "Invalid bootloader size: $$size" >&2; exit 1; }
 	cat bin/bootloader.bin bin/kernel.img > bin/disk.img
 
-bin/bootloader.bin: bin/bootloader
-	objcopy -O binary $< $@
-
-bin/bootloader: bin/bootloader.o
-	ld $(LDFLAGS) --section-start=.text=0x7C00 -o $@ $^
-
-bin/bootloader.o: bootloader.S libasm.S | bin
-	gcc $(ASFLAGS) -o $@ $<
-
 bin/kernel.img: bin/kernel.bin
 	@set -e; size="$$(stat --printf=%s bin/kernel.bin)"; \
 	[ "$$size" -le 65535 ] || { echo "Too big kernel size: $$size" >&2; exit 1; }; \
