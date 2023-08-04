@@ -7,7 +7,8 @@ ASFLAGS := -c -g -m32
 LDFLAGS := -m elf_i386
 
 $(BUILD_DIR)/kernel.img: $(BUILD_DIR)/kernel.bin
-	@set -e; size="$$(stat --printf=%s $<)"; \
+	@set -eu; \
+	size="$$(stat --printf=%s $<)"; \
 	[ "$$size" -le 65535 ] || { echo "Too big kernel size: $$size" >&2; exit 1; }; \
 	(\
 		printf "%b" "$$(printf '\\x%02X\\x%02X' "$$((size % 256))" "$$((size / 256))")"; \

@@ -1,35 +1,40 @@
 .PHONY: all boot clean debug gdb-boot gdb-kernel test
 
+BUILD_DIR := ./build
 
-ASFLAGS := -c -g -m32
-LDFLAGS := -m elf_i386
-
-BOOT_CMD := qemu-system-i386 -drive file=bin/disk.img,format=raw -display curses -monitor stdio
+BOOT_CMD := qemu-system-i386 -drive file=$(BUILD_DIR)/disk.img,format=raw -display curses -monitor stdio
 GDB_CMD := gdb --quiet --command debug.gdb
 
 all: test boot
 
-$(wildcard bin/*.o): Makefile
+test: $(BUILD_DIR)/disk.img
+	make -C linux
 
-boot: bin/disk.img
+boot: $(BUILD_DIR)/disk.img
 	$(BOOT_CMD)
 
-debug: bin/disk.img
-	$(BOOT_CMD) -S -gdb unix:bin/gdb.socket,server,nowait
+debug: $(BUILD_DIR)/disk.img
+	$(BOOT_CMD) -S -gdb unix:$(BUILD_DIR)/gdb.socket,server,nowait
 
 gdb-boot:
-	$(GDB_CMD) --symbols bin/bootloader
+	$(GDB_CMD) --symbols bootloader/build/bootloader
 
 gdb-kernel:
-	$(GDB_CMD) --symbols bin/kernel
+	$(GDB_CMD) --symbols kernel/build/kernel
 
-bin/disk.img: bin/bootloader.bin bin/kernel.img
-	@size="$$(stat --printf=%s bin/bootloader.bin)"; [ "$$size" -eq 512 ] || { echo "Invalid bootloader size: $$size" >&2; exit 1; }
-	cat bin/bootloader.bin bin/kernel.img > bin/disk.img
+$(BUILD_DIR)/disk.img: Makefile | $(BUILD_DIR)
+	make -C bootloader
+	make -C kernel
+	@set -eu; \
+		size="$$(stat --printf=%s bootloader/build/bootloader.bin)"; \
+		[ "$$size" -eq 512 ] || { echo "Invalid bootloader size: $$size" >&2; exit 1; }
+	cat bootloader/build/bootloader.bin kernel/build/kernel.img > $@
 
-
-bin:
-	[ -d bin ] || mkdir bin
+$(BUILD_DIR):
+	[ -d $(BUILD_DIR) ] || mkdir $(BUILD_DIR)
 
 clean:
-	rm -rf ./bin
+	rm -rf $(BUILD_DIR)
+	make -C linux clean
+	make -C kernel clean
+	make -C bootloader clean
