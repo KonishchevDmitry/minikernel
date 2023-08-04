@@ -12,10 +12,6 @@ all: test boot
 
 $(wildcard bin/*.o): Makefile
 
-test: bin/linux-app bin/linux-stdlib-app
-	./bin/linux-app --arg value
-	./bin/linux-stdlib-app --arg value
-
 boot: bin/disk.img
 	$(BOOT_CMD)
 
@@ -58,25 +54,6 @@ bin/kernel: bin/kernel.o
 
 bin/kernel.o: kernel.S libasm.S | bin
 	gcc $(ASFLAGS) -o $@ $<
-
-bin/linux-app: bin/linux_app.o bin/linux_app_base.o bin/libasm.o
-	ld $(LDFLAGS) -o $@ $^
-
-bin/linux_app.o: linux_app.S | bin
-	gcc $(ASFLAGS) -o $@ $<
-
-# Requires gcc-multilib package
-bin/linux-stdlib-app: bin/linux_stdlib_app.o bin/linux_app_base.o bin/libasm.o
-	ld $(LDFLAGS) -dynamic-linker /lib/ld-linux.so.2 -o $@ $^ -lc
-
-bin/linux_stdlib_app.o: linux_stdlib_app.s | bin
-	gcc $(ASFLAGS) -o $@ $<
-
-bin/linux_app_base.o: linux_app_base.s | bin
-	gcc $(ASFLAGS) -o $@ $<
-
-bin/libasm.o: libasm.S | bin
-	gcc $(ASFLAGS) -D ARCH_BITS=32 -o $@ $<
 
 bin:
 	[ -d bin ] || mkdir bin
