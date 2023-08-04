@@ -43,4 +43,4 @@ printc:
         add $2, %sp
         jmp _printc
 
-#include "libasm.S"
+#include "../libasm.S"
