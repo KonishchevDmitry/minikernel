@@ -145,5 +145,6 @@ _end:
 .word 0xAA55
 
 // See https://wiki.osdev.org/Memory_Map_(x86) for usable memory details
+// Stack starts at 0x6F04.
 kernel_start:
 kernel_size:
