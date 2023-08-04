@@ -35,14 +35,14 @@
         lea 16(%esp), %esi # argv list is preceded by argc value
         sub $4, %esp       # print arg
 
-        mov $running_message, (%esp)
+        movl $running_message, (%esp)
         call prints
 
         _print_args_and_env_args_loop:
-            cmp $0, (%esi)
+            cmpl $0, (%esi)
             je _print_args_and_env
 
-            mov $' ', (%esp)
+            movl $' ', (%esp)
             call printc
 
             mov (%esi), %eax
@@ -53,29 +53,29 @@
             jmp _print_args_and_env_args_loop
 
         _print_args_and_env:
-            mov $'\n', (%esp)
+            movl $'\n', (%esp)
             call printc
 
-            cmp $1, 12(%esp) # print_env
+            cmpl $1, 12(%esp) # print_env
             jne _print_args_and_env_return
 
-            mov $environment_message, (%esp)
+            movl $environment_message, (%esp)
             call printlnf
 
             add $4, %esi
 
         _print_args_and_env_env_loop:
-            cmp $0, (%esi)
+            cmpl $0, (%esi)
             je _print_args_and_env_return
 
-            mov $list_prefix, (%esp)
+            movl $list_prefix, (%esp)
             call prints
 
             mov (%esi), %eax
             mov %eax, (%esp)
             call prints
 
-            mov $'\n', (%esp)
+            movl $'\n', (%esp)
             call printc
 
             add $4, %esi

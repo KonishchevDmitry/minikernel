@@ -5,6 +5,7 @@ header:
 kernel_size:
     .word 0
 
+.global _start
 _start:
     push $_greeting_message
     call printlnf

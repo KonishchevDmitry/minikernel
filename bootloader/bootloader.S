@@ -5,6 +5,7 @@
 .code16
 #define ARCH_BITS 16
 
+.global _start
 _start:
     push $(_end - _start + 2)
     push $_greeting_message
