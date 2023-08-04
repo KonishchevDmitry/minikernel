@@ -27,7 +27,7 @@ $(BUILD_DIR)/stdlib_app.o: stdlib_app.s | $(BUILD_DIR)
 $(BUILD_DIR)/app_base.o: app_base.s | $(BUILD_DIR)
 	gcc $(ASFLAGS) -o $@ $<
 
-$(BUILD_DIR)/libasm.o: ../libasm.S | $(BUILD_DIR)
+$(BUILD_DIR)/libasm.o: ../lib/asm.S | $(BUILD_DIR)
 	gcc $(ASFLAGS) -D ARCH_BITS=32 -o $@ $<
 
 $(BUILD_DIR):

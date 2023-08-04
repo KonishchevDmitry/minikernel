@@ -22,7 +22,7 @@ $(BUILD_DIR)/kernel.bin: $(BUILD_DIR)/kernel
 $(BUILD_DIR)/kernel: $(BUILD_DIR)/kernel.o
 	ld $(LDFLAGS) --section-start=.text=0x7E00 -o $@ $^
 
-$(BUILD_DIR)/kernel.o: kernel.S ../libasm.S | $(BUILD_DIR)
+$(BUILD_DIR)/kernel.o: kernel.S ../lib/asm.S | $(BUILD_DIR)
 	gcc $(ASFLAGS) -o $@ $<
 
 $(BUILD_DIR):

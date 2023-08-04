@@ -44,4 +44,4 @@ printc:
         add $2, %sp
         jmp _printc
 
-#include "../libasm.S"
+#include "../lib/asm.S"

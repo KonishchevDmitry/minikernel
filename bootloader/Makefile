@@ -13,7 +13,7 @@ $(wildcard $(BUILD_DIR)/*.o): Makefile
 $(BUILD_DIR)/bootloader: $(BUILD_DIR)/bootloader.o
 	ld $(LDFLAGS) --section-start=.text=0x7C00 -o $@ $^
 
-$(BUILD_DIR)/bootloader.o: bootloader.S ../libasm.S | $(BUILD_DIR)
+$(BUILD_DIR)/bootloader.o: bootloader.S ../lib/asm.S | $(BUILD_DIR)
 	gcc $(ASFLAGS) -o $@ $<
 
 $(BUILD_DIR):
