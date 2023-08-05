@@ -5,6 +5,7 @@ BUILD_DIR := ./build
 .EXTRA_PREREQS := Makefile | $(BUILD_DIR)
 
 ASFLAGS := -m32 -g -c
+CFLAGS_16 := -m16 -g -c
 LDFLAGS := -m elf_i386
 
 $(BUILD_DIR)/kernel.img: $(BUILD_DIR)/kernel.bin
@@ -20,11 +21,14 @@ $(BUILD_DIR)/kernel.img: $(BUILD_DIR)/kernel.bin
 $(BUILD_DIR)/kernel.bin: $(BUILD_DIR)/kernel
 	objcopy -O binary $< $@
 
-$(BUILD_DIR)/kernel: $(patsubst %, $(BUILD_DIR)/%.o, kernel libasm)
+$(BUILD_DIR)/kernel: $(patsubst %, $(BUILD_DIR)/%.o, kernel libasm bootstrap)
 	ld $(LDFLAGS) --section-start=.text=0x7E00 -o $@ $^
 
 $(BUILD_DIR)/kernel.o: kernel.S
 	gcc $(ASFLAGS) -o $@ $<
+
+$(BUILD_DIR)/bootstrap.o: bootstrap.c
+	gcc $(CFLAGS_16) -o $@ $<
 
 $(BUILD_DIR)/libasm.o: ../lib/asm.S
 	gcc $(ASFLAGS) -D ARCH_BITS=16 -o $@ $<
