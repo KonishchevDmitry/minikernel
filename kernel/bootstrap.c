@@ -1,5 +1,5 @@
 #include <types.h>
 
-int c_test(int8_t a, int16_t b) {
+int c_test(i8 a, i16 b) {
     return sizeof a + sizeof b;
 }
