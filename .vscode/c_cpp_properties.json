@@ -1,0 +1,8 @@
+{
+    "version": 4,
+    "configurations": [{
+        "name": "minikernel",
+        "includePath": ["${workspaceFolder}/lib"],
+        "intelliSenseMode": "linux-gcc-x86"
+    }]
+}
