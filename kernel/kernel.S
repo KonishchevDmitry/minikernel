@@ -1,5 +1,4 @@
 .code16
-#define ARCH_BITS 16
 
 header:
 kernel_size:
@@ -19,6 +18,7 @@ _start:
     _stop_execution_message: .string "Stopping the execution."
 
 // void printc(int c)
+.global printc
 printc:
     enter $0, $0
 
@@ -43,5 +43,3 @@ printc:
         call printc
         add $2, %sp
         jmp _printc
-
-#include "../lib/asm.S"

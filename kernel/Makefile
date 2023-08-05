@@ -1,9 +1,10 @@
-.PHONY: clean
-
 SHELL := /bin/bash
 BUILD_DIR := ./build
 
-ASFLAGS := -c -g -m32
+.PHONY: clean
+.EXTRA_PREREQS := Makefile | $(BUILD_DIR)
+
+ASFLAGS := -m32 -g -c
 LDFLAGS := -m elf_i386
 
 $(BUILD_DIR)/kernel.img: $(BUILD_DIR)/kernel.bin
@@ -19,11 +20,14 @@ $(BUILD_DIR)/kernel.img: $(BUILD_DIR)/kernel.bin
 $(BUILD_DIR)/kernel.bin: $(BUILD_DIR)/kernel
 	objcopy -O binary $< $@
 
-$(BUILD_DIR)/kernel: $(BUILD_DIR)/kernel.o
+$(BUILD_DIR)/kernel: $(patsubst %, $(BUILD_DIR)/%.o, kernel libasm)
 	ld $(LDFLAGS) --section-start=.text=0x7E00 -o $@ $^
 
-$(BUILD_DIR)/kernel.o: kernel.S ../lib/asm.S | $(BUILD_DIR)
+$(BUILD_DIR)/kernel.o: kernel.S
 	gcc $(ASFLAGS) -o $@ $<
+
+$(BUILD_DIR)/libasm.o: ../lib/asm.S
+	gcc $(ASFLAGS) -D ARCH_BITS=16 -o $@ $<
 
 $(BUILD_DIR):
 	[ -d $(BUILD_DIR) ] || mkdir $(BUILD_DIR)

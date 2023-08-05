@@ -3,7 +3,6 @@
 // The labels have absolute values with 0x7C00 shift, so we don't need to alter any segment registers
 
 .code16
-#define ARCH_BITS 16
 
 .global _start
 _start:
@@ -137,6 +136,7 @@ printc:
         add $2, %sp
         jmp _printc
 
+#define ARCH_BITS 16
 #include "../lib/asm.S"
 
 _end:

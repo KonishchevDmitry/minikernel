@@ -7,7 +7,7 @@
 //
 // Please note that 16-bit addressing mode doesn't support SP in base/index expressions.
 
-#include "arch_pre.S"
+#include "arch.S"
 
 // void prints(const char* s)
 .global prints
@@ -157,11 +157,10 @@ printd:
         ret
 
 // void halt()
+.global halt
 .type halt, @function
 halt:
     cli
     _halt_loop:
         hlt
         jmp _halt_loop
-
-#include "arch_post.S"
