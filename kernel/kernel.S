@@ -32,26 +32,4 @@ _start:
 // void printc(int c)
 .global printc
 printc:
-    enter $0, $0
-
-    cmpw $'\n', 4(%bp)
-    je _printc_cr
-
-    _printc:
-        push %bx
-
-        // https://en.wikipedia.org/wiki/INT_10H
-        mov $0x0E, %ah
-        mov 4(%bp), %al
-        mov $0, %bh
-        int $0x10
-
-        pop %bx
-        leave
-        ret
-
-    _printc_cr:
-        push $'\r'
-        call printc
-        add $2, %sp
-        jmp _printc
+    jmp printc_bios

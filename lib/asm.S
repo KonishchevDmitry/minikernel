@@ -156,6 +156,36 @@ printd:
         leave
         ret
 
+#if ARCH_BITS == 16
+// void printc_bios(int c)
+.global printc_bios
+.type printc_bios, @function
+printc_bios:
+    enter $0, $0
+
+    cmpw $'\n', 4(%bp)
+    je _printc_bios_cr
+
+    _printc_bios:
+        push %bx
+
+        // https://en.wikipedia.org/wiki/INT_10H
+        mov $0x0E, %ah
+        mov 4(%bp), %al
+        mov $0, %bh
+        int $0x10
+
+        pop %bx
+        leave
+        ret
+
+    _printc_bios_cr:
+        push $'\r'
+        call printc_bios
+        add $2, %sp
+        jmp _printc_bios
+#endif
+
 // void halt()
 .global halt
 .type halt, @function
