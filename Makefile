@@ -27,7 +27,7 @@ image: bootloader kernel
 	@set -eu; \
 		size="$$(stat --printf=%s bootloader/build/bootloader.bin)"; \
 		[ "$$size" -eq 512 ] || { echo "Invalid bootloader size: $$size" >&2; exit 1; }
-	cat bootloader/build/bootloader.bin kernel/build/kernel.img > $@
+	cat bootloader/build/bootloader.bin kernel/build/kernel.img > $(BUILD_DIR)/disk.img
 
 kernel:
 	make -C kernel
