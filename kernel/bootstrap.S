@@ -11,14 +11,14 @@ ensure_a20_address_line:
     push %di
 
     // DS:SI = 0x0000:0x0500 (0x00000500)
-	xor %ax, %ax
-	mov %ax, %ds
-	mov $0x0500, %si
+    xor %ax, %ax
+    mov %ax, %ds
+    mov $0x0500, %si
 
     // ES:DI = 0xFFFF:0x0510 (0x00100500)
-	not %ax
-	mov %ax, %es
-	mov $0x0510, %di
+    not %ax
+    mov %ax, %es
+    mov $0x0510, %di
 
     // Original values
     movw %ds:(%si), %cx
