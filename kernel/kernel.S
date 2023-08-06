@@ -12,6 +12,8 @@ _start:
     call printlnf
     add $2, %sp
 
+    call ensure_a20_address_line
+
     cli
         calll configure_gdt
 
@@ -29,20 +31,6 @@ _start:
 
     _greeting_message: .string "Kernel is running..."
     _stop_execution_message: .string "Stopping the execution."
-
-// void enter_protected_mode()
-enter_protected_mode:
-    push $_enter_protected_mode_message
-    call printlnf
-    add $2, %sp
-
-    mov %cr0, %eax
-    or $1, %eax
-    mov %eax, %cr0
-
-    ret
-
-    _enter_protected_mode_message: .string "Entering protected mode..."
 
 // void printc(int c)
 .global printc

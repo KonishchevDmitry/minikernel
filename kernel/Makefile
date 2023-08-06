@@ -23,10 +23,13 @@ $(BUILD_DIR)/kernel.img: $(BUILD_DIR)/kernel.bin
 $(BUILD_DIR)/kernel.bin: $(BUILD_DIR)/kernel
 	objcopy -O binary $< $@
 
-$(BUILD_DIR)/kernel: $(patsubst %, $(BUILD_DIR)/%.o, kernel libasm gdt)
+$(BUILD_DIR)/kernel: $(patsubst %, $(BUILD_DIR)/%.o, kernel libasm bootstrap gdt)
 	ld $(LDFLAGS) --section-start=.text=0x7E00 --omagic -o $@ $^
 
 $(BUILD_DIR)/kernel.o: kernel.S
+	gcc $(ASFLAGS) -o $@ $<
+
+$(BUILD_DIR)/bootstrap.o: bootstrap.S
 	gcc $(ASFLAGS) -o $@ $<
 
 $(BUILD_DIR)/gdt.o: gdt.c $(HEADERS)
