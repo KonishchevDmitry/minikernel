@@ -8,6 +8,8 @@ ASFLAGS := -m32 -g -c
 CFLAGS_16 := -m16 -g -c -I ../lib -Wall -Wextra -Werror -nostdlib -fno-builtin -ffreestanding -fno-stack-protector -fno-pie
 LDFLAGS := -m elf_i386
 
+HEADERS := $(wildcard *.h ../lib/*.h)
+
 $(BUILD_DIR)/kernel.img: $(BUILD_DIR)/kernel.bin
 	@set -eu; \
 	size="$$(stat --printf=%s $<)"; \
@@ -21,16 +23,13 @@ $(BUILD_DIR)/kernel.img: $(BUILD_DIR)/kernel.bin
 $(BUILD_DIR)/kernel.bin: $(BUILD_DIR)/kernel
 	objcopy -O binary $< $@
 
-$(BUILD_DIR)/kernel: $(patsubst %, $(BUILD_DIR)/%.o, kernel libasm bootstrap gdt)
+$(BUILD_DIR)/kernel: $(patsubst %, $(BUILD_DIR)/%.o, kernel libasm gdt)
 	ld $(LDFLAGS) --section-start=.text=0x7E00 --omagic -o $@ $^
 
 $(BUILD_DIR)/kernel.o: kernel.S
 	gcc $(ASFLAGS) -o $@ $<
 
-$(BUILD_DIR)/bootstrap.o: bootstrap.c $(wildcard ../lib/*.h)
-	gcc $(CFLAGS_16) -o $@ $<
-
-$(BUILD_DIR)/gdt.o: gdt.c $(wildcard ../lib/*.h)
+$(BUILD_DIR)/gdt.o: gdt.c $(HEADERS)
 	gcc $(CFLAGS_16) -o $@ $<
 
 $(BUILD_DIR)/libasm.o: ../lib/asm.S
