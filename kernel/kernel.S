@@ -9,7 +9,7 @@ kernel_size:
 .global _start
 _start:
     push $_greeting_message
-    call printlnf
+    call real_mode_printlnf
     add $2, %sp
 
     call ensure_a20_address_line
@@ -26,16 +26,16 @@ _start:
         // ljmp $(GDT_KERNEL_CODE_INDEX * GDT_ENTRY_SIZE), $_start_32
 
     push $_stop_execution_message
-    call printlnf
-    jmp halt
+    call real_mode_printlnf
+    jmp real_mode_halt
 
     _greeting_message: .string "Kernel is running..."
     _stop_execution_message: .string "Stopping the execution."
 
-// void printc(int c)
-.global printc
-printc:
-    jmp printc_bios
+// void real_mode_printc(int c)
+.global real_mode_printc
+real_mode_printc:
+    jmp real_mode_printc_bios
 
 .code32
 

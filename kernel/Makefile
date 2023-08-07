@@ -23,7 +23,7 @@ $(BUILD_DIR)/kernel.img: $(BUILD_DIR)/kernel.bin
 $(BUILD_DIR)/kernel.bin: $(BUILD_DIR)/kernel
 	objcopy -O binary $< $@
 
-$(BUILD_DIR)/kernel: $(patsubst %, $(BUILD_DIR)/%.o, kernel libasm bootstrap gdt vga)
+$(BUILD_DIR)/kernel: $(patsubst %, $(BUILD_DIR)/%.o, kernel libasm_real_mode bootstrap gdt vga)
 	ld $(LDFLAGS) --section-start=.text=0x7E00 --omagic -o $@ $^
 
 $(BUILD_DIR)/kernel.o: kernel.S
@@ -40,6 +40,9 @@ $(BUILD_DIR)/vga.o: vga.c $(HEADERS)
 
 $(BUILD_DIR)/libasm.o: ../lib/asm.S
 	gcc $(ASFLAGS) -D ARCH_BITS=16 -o $@ $<
+
+$(BUILD_DIR)/libasm_real_mode.o: $(BUILD_DIR)/libasm.o
+	objcopy --prefix-symbols=real_mode_ $< $@
 
 $(BUILD_DIR):
 	[ -d $(BUILD_DIR) ] || mkdir $(BUILD_DIR)

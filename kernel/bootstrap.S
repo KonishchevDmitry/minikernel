@@ -52,7 +52,7 @@ ensure_a20_address_line:
 .type enter_protected_mode, @function
 enter_protected_mode:
     push $_enter_protected_mode_message
-    call printlnf
+    call real_mode_printlnf
     add $2, %sp
 
     mov %cr0, %eax
@@ -67,16 +67,16 @@ enter_protected_mode:
 .global real_mode_panic
 .type real_mode_panic, @function
 real_mode_panic:
-    push $_real_mode_panic
-    call prints
+    push $_real_mode_panic_prefix
+    call real_mode_prints
     add $2, %sp
 
-    call printf_inner
+    call real_mode_printf_inner
 
     push $'\n'
-    call printc
+    call real_mode_printc
     add $2, %sp
 
-    call halt
+    call real_mode_halt
 
-    _real_mode_panic: .string "Panic: "
+    _real_mode_panic_prefix: .string "Panic: "
