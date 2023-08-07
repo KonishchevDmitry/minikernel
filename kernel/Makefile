@@ -5,7 +5,7 @@ BUILD_DIR := ./build
 .EXTRA_PREREQS := Makefile | $(BUILD_DIR)
 
 ASFLAGS := -m32 -g -c
-CFLAGS_16 := -m16 -g -c -I ../lib -Wall -Wextra -Werror -nostdlib -fno-builtin -ffreestanding -fno-stack-protector -fno-pie
+CFLAGS := -g -c -I ../lib -Wall -Wextra -Werror -nostdlib -fno-builtin -ffreestanding -fno-stack-protector -fno-pie
 LDFLAGS := -m elf_i386
 
 HEADERS := $(wildcard *.h ../lib/*.h)
@@ -23,7 +23,7 @@ $(BUILD_DIR)/kernel.img: $(BUILD_DIR)/kernel.bin
 $(BUILD_DIR)/kernel.bin: $(BUILD_DIR)/kernel
 	objcopy -O binary $< $@
 
-$(BUILD_DIR)/kernel: $(patsubst %, $(BUILD_DIR)/%.o, kernel libasm bootstrap gdt)
+$(BUILD_DIR)/kernel: $(patsubst %, $(BUILD_DIR)/%.o, kernel libasm bootstrap gdt vga)
 	ld $(LDFLAGS) --section-start=.text=0x7E00 --omagic -o $@ $^
 
 $(BUILD_DIR)/kernel.o: kernel.S
@@ -33,7 +33,10 @@ $(BUILD_DIR)/bootstrap.o: bootstrap.S
 	gcc $(ASFLAGS) -o $@ $<
 
 $(BUILD_DIR)/gdt.o: gdt.c $(HEADERS)
-	gcc $(CFLAGS_16) -o $@ $<
+	gcc -m16 $(CFLAGS) -o $@ $<
+
+$(BUILD_DIR)/vga.o: vga.c $(HEADERS)
+	gcc -m32 $(CFLAGS) -o $@ $<
 
 $(BUILD_DIR)/libasm.o: ../lib/asm.S
 	gcc $(ASFLAGS) -D ARCH_BITS=16 -o $@ $<
