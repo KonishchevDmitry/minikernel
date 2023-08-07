@@ -1,9 +1,9 @@
 BUILD_DIR := ./build
 
-.PHONY: all boot bootloader clean debug gdb-boot gdb-kernel image kernel test
+.PHONY: all boot boot-vnc bootloader clean debug gdb-boot gdb-kernel image kernel test
 .EXTRA_PREREQS := Makefile | $(BUILD_DIR)
 
-BOOT_CMD := qemu-system-i386 -drive file=$(BUILD_DIR)/disk.img,format=raw -display curses -monitor stdio
+BOOT_CMD := qemu-system-i386 -drive file=$(BUILD_DIR)/disk.img,format=raw -monitor stdio
 GDB_CMD := gdb --quiet --command debug.gdb
 
 all: test boot
@@ -12,10 +12,13 @@ test: image
 	make -C linux
 
 boot: image
-	$(BOOT_CMD)
+	$(BOOT_CMD) -display curses
+
+boot-vnc: image
+	$(BOOT_CMD) -display none -vnc unix:$(BUILD_DIR)/vnc.socket
 
 debug: image
-	$(BOOT_CMD) -S -gdb unix:$(BUILD_DIR)/gdb.socket,server,nowait
+	$(BOOT_CMD) -display curses -S -gdb unix:$(BUILD_DIR)/gdb.socket,server,nowait
 
 gdb-boot:
 	$(GDB_CMD) --symbols bootloader/build/bootloader
