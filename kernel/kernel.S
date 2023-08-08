@@ -25,12 +25,7 @@ _start:
 
         ljmp $(GDT_KERNEL_CODE_INDEX * GDT_ENTRY_SIZE), $_start_32
 
-    push $_stop_execution_message
-    call real_mode_printlnf
-    jmp real_mode_halt
-
     _greeting_message: .string "Kernel is running..."
-    _stop_execution_message: .string "Stopping the execution."
 
 // void real_mode_printc(int c)
 .global real_mode_printc
@@ -39,8 +34,8 @@ real_mode_printc:
 
 .code32
 
-// FIXME(konishchev): IDT: https://habr.com/ru/articles/467289/
 _start_32:
+    // FIXME(konishchev): IDT: https://habr.com/ru/articles/467289/
     //sti
 
     // We've made a far jump here which loaded the segment selector to CS register.
@@ -52,4 +47,17 @@ _start_32:
     mov %ax, %gs
     mov %ax, %ss
 
+    // Configure VGA to be able to print something
+    call configure_vga
+
+    push $_protected_mode_greeting_message
+    call printlnf
+    add $4, %esp
+
+    push $_stop_execution_message
+    call printlnf
+    add $4, %esp
     call halt
+
+    _protected_mode_greeting_message: .string "Entered protected mode."
+    _stop_execution_message: .string "Stopping the execution."
