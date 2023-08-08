@@ -5,7 +5,7 @@ BUILD_DIR := ./build
 .EXTRA_PREREQS := Makefile | $(BUILD_DIR)
 
 ASFLAGS := -m32 -g -c
-CFLAGS := -g -c -I ../lib -Wall -Wextra -Werror -nostdlib -fno-builtin -ffreestanding -fno-stack-protector -fno-pie
+CFLAGS := -g -O -c -I ../lib -Wall -Wextra -Werror -nostdlib -fno-builtin -ffreestanding -fno-stack-protector -fno-pie
 LDFLAGS := -m elf_i386
 
 HEADERS := $(wildcard *.h ../lib/*.h)
