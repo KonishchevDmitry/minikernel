@@ -52,13 +52,4 @@ _start_32:
     mov %ax, %gs
     mov %ax, %ss
 
-    push $'V'
-    call printc_vga
-    push $'G'
-    call printc_vga
-    push $'A'
-    call printc_vga
-    push $'!'
-    call printc_vga
-
     call halt
