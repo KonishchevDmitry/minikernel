@@ -17,13 +17,13 @@ _start:
     cli
         calll configure_gdt
 
-        // call enter_protected_mode
+        call enter_protected_mode
 
         // After entering protected mode we've lost all BIOS services. GDT is not applied yet, but we are expected to
         // make a far jump to 32-bit code with proper segment selector + load the proper segment selector to all other
         // segment registers.
 
-        // ljmp $(GDT_KERNEL_CODE_INDEX * GDT_ENTRY_SIZE), $_start_32
+        ljmp $(GDT_KERNEL_CODE_INDEX * GDT_ENTRY_SIZE), $_start_32
 
     push $_stop_execution_message
     call real_mode_printlnf
@@ -52,5 +52,13 @@ _start_32:
     mov %ax, %gs
     mov %ax, %ss
 
-    hlt
-    jmp _start_32
+    push $'V'
+    call printc_vga
+    push $'G'
+    call printc_vga
+    push $'A'
+    call printc_vga
+    push $'!'
+    call printc_vga
+
+    call halt
