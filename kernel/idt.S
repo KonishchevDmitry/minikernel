@@ -2,9 +2,10 @@
 //
 // See https://wiki.osdev.org/Interrupt_Descriptor_Table for details
 
+#include "idt.h"
 #include "gdt.h"
 
-.align 8
+.align IDT_ENTRY_SIZE
 .global IDT
 IDT:
     .word isr_0, GDT_KERNEL_CODE_INDEX * GDT_ENTRY_SIZE, 0x8f00, 0x0000

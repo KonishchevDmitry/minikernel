@@ -34,7 +34,7 @@ typedef struct {
 static_assert(sizeof(GdtEntry) == GDT_ENTRY_SIZE, "Unexpected GDT entry size");
 
 typedef struct {
-    u16 size;
+    u16 limit;
     void* base;
 } __attribute__((packed)) GdtDescriptor;
 
@@ -124,8 +124,8 @@ static GdtEntry GDT[] = {
 static_assert(sizeof GDT / sizeof GDT[0] == 5, "Unexpected GDT size");
 
 static GdtDescriptor GDTR = {
-    .base = &GDT,
-    .size = sizeof GDT - 1,
+    .base = GDT,
+    .limit = sizeof GDT - 1,
 };
 
 // Please note that:
