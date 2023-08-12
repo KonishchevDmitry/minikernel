@@ -1,5 +1,6 @@
 #include <stdarg.h>
 
+#include "textio.h"
 #include "vga.h"
 
 static void printc(char c) {
@@ -32,7 +33,7 @@ static void printd(int value) {
     }
 }
 
-static void print_args(const char* s, va_list args) {
+void printf_args(const char* s, va_list args) {
     char c;
 
     while((c = *s++)) {
@@ -69,14 +70,14 @@ static void print_args(const char* s, va_list args) {
 void printf(const char* s, ...) {
     va_list args;
     va_start(args, s);
-    print_args(s, args);
+    printf_args(s, args);
     va_end(args);
 }
 
 void printlnf(const char* s, ...) {
     va_list args;
     va_start(args, s);
-    print_args(s, args);
+    printf_args(s, args);
     va_end(args);
     printc('\n');
 }

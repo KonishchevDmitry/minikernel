@@ -40,11 +40,11 @@ void configure_vga() {
 static void move_cursor() {
     u16 pos = VGA.pos;
 
-	outb(CRT_INDEX_REGISTER, 0x0F);
-	outb(CRT_DATA_REGISTER, pos & 0xFF);
+    outb(CRT_INDEX_REGISTER, 0x0F);
+    outb(CRT_DATA_REGISTER, pos & 0xFF);
 
-	outb(CRT_INDEX_REGISTER, 0x0E);
-	outb(CRT_DATA_REGISTER, pos >> 8);
+    outb(CRT_INDEX_REGISTER, 0x0E);
+    outb(CRT_DATA_REGISTER, pos >> 8);
 }
 
 static void scroll_screen() {
