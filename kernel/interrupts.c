@@ -8,6 +8,7 @@
 
 #include "idt.h"
 #include "misc.h"
+#include "pic.h"
 #include "textio.h"
 
 typedef enum {
@@ -52,6 +53,8 @@ void (*INTERRUPT_HANDLERS[IDT_MAX_ENTRIES])(int irq);
 #pragma GCC pop_options
 
 void configure_interrupts() {
+    configure_pic();
+
     for(size_t irq = 0; irq < IDT_MAX_ENTRIES; irq++) {
         INTERRUPT_HANDLERS[irq] = default_interrupt_handler;
     }
