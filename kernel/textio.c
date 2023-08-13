@@ -1,4 +1,5 @@
 #include <stdarg.h>
+#include <types.h>
 
 #include "textio.h"
 #include "vga.h"
@@ -7,13 +8,13 @@ static void printc(char c) {
     printc_vga(c);
 }
 
-static void prints(const char* s) {
+static void print_string(const char* s) {
     while(*s) {
         printc(*s++);
     }
 }
 
-static void printd(int value) {
+static void print_digit(int value) {
     if(value < 0) {
         printc('-');
     } else {
@@ -33,6 +34,12 @@ static void printd(int value) {
     }
 }
 
+static void print_binary(u32 value, int bits) {
+    for(u32 mask = 1 << (bits - 1); mask != 0; mask >>= 1) {
+        printc('0' + ((value & mask) != 0));
+    }
+}
+
 void printf_args(const char* s, va_list args) {
     char c;
 
@@ -48,11 +55,35 @@ void printf_args(const char* s, va_list args) {
                 break;
 
             case 'd':
-                printd(va_arg(args, int));
+                print_digit(va_arg(args, int));
+                break;
+
+            case 'b':
+                int bits;
+
+                switch((c = *s++)) {
+                    case 'b':
+                        bits = 8;
+                        break;
+
+                    case 'w':
+                        bits = 16;
+                        break;
+
+                    case 'd':
+                        bits = 32;
+                        break;
+
+                    default:
+                        print_string(s - 3);
+                        return;
+                }
+
+                print_binary(va_arg(args, int), bits);
                 break;
 
             case 's':
-                prints(va_arg(args, const char*));
+                print_string(va_arg(args, const char*));
                 break;
 
             case '%':
@@ -60,8 +91,7 @@ void printf_args(const char* s, va_list args) {
                 break;
 
             default:
-                printc('%');
-                prints(s - 1);
+                print_string(s - 2);
                 return;
         }
     }
