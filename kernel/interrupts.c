@@ -1,6 +1,7 @@
 // See for details:
 // * https://wiki.osdev.org/IDT
 // * https://wiki.osdev.org/Interrupt
+// * https://wiki.osdev.org/Exceptions
 
 #include <assert.h>
 #include <types.h>
@@ -43,11 +44,14 @@ static IdtDescriptor IDTR = {
 
 void (*INTERRUPT_HANDLERS[IDT_MAX_ENTRIES])(int irq);
 
-static void default_interrupt_handler(int irq) {
-    panic("Unsupported interrupt received: #%d.", irq);
-}
+#pragma GCC push_options
+#pragma GCC target("general-regs-only")
+    static void default_interrupt_handler(int irq) {
+        panic("Unsupported interrupt received: #%d.", irq);
+    }
+#pragma GCC pop_options
 
-void configure_idt() {
+void configure_interrupts() {
     for(size_t irq = 0; irq < IDT_MAX_ENTRIES; irq++) {
         INTERRUPT_HANDLERS[irq] = default_interrupt_handler;
     }

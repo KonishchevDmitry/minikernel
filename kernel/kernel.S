@@ -35,29 +35,58 @@ real_mode_printc:
 .code32
 
 _start_32:
-    // FIXME(konishchev): IDT: https://habr.com/ru/articles/467289/
-    //sti
+        // We've made a far jump here which loaded the segment selector to CS register.
+        // Now we need to update all other segment registers to apply GDT.
+        mov $(GDT_KERNEL_DATA_INDEX * GDT_ENTRY_SIZE), %ax
+        mov %ax, %ds
+        mov %ax, %es
+        mov %ax, %fs
+        mov %ax, %gs
+        mov %ax, %ss
 
-    // We've made a far jump here which loaded the segment selector to CS register.
-    // Now we need to update all other segment registers to apply GDT.
-    mov $(GDT_KERNEL_DATA_INDEX * GDT_ENTRY_SIZE), %ax
-    mov %ax, %ds
-    mov %ax, %es
-    mov %ax, %fs
-    mov %ax, %gs
-    mov %ax, %ss
+        // Configure VGA to be able to print something
+        call configure_vga
 
-    // Configure VGA to be able to print something
-    call configure_vga
+        call configure_interrupts
 
-    push $_protected_mode_greeting_message
-    call printlnf
-    add $4, %esp
+        push $_protected_mode_greeting_message
+        call printlnf
+        add $4, %esp
+    sti
 
-    push $_stop_execution_message
-    call printlnf
-    add $4, %esp
-    call halt
+    jmp main
 
     _protected_mode_greeting_message: .string "Entered protected mode."
-    _stop_execution_message: .string "Stopping the execution."
+
+// void isr(int irq)
+.align 4
+.global isr
+isr:
+    // See https://wiki.osdev.org/Interrupt_Service_Routines for details
+
+    push %eax
+    push %ecx
+    push %edx
+
+    cld # C code following the System V ABI requires DF to be clear on function entry
+
+    mov 12(%esp), %eax
+    push %eax
+    call *INTERRUPT_HANDLERS(,%eax,4)
+    add $4, %esp
+
+    pop %edx
+    pop %ecx
+    pop %eax
+    add $4, %esp
+
+    iret
+
+// FIXME(konishchev): https://wiki.osdev.org/PIC
+// When the CPU finishes handling the interrupt, it tells the PIC that it's OK to resume sending interrupts:
+// mov al,20h
+// out 20h,al
+// or if the interrupt came from the slave PIC:
+// mov al, 20h
+// out A0h, al
+// out 20h, al
