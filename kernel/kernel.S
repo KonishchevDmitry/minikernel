@@ -44,7 +44,7 @@ _start_32:
         mov %ax, %gs
         mov %ax, %ss
 
-        // Configure VGA to be able to print something
+        // Configure VGA as soon as possible to be able to print something
         call configure_vga
 
         call configure_interrupts
@@ -72,7 +72,7 @@ isr:
 
     mov 12(%esp), %eax
     push %eax
-    call *INTERRUPT_HANDLERS(,%eax,4)
+    call handle_interrupt
     add $4, %esp
 
     pop %edx
@@ -81,12 +81,3 @@ isr:
     add $4, %esp
 
     iret
-
-// FIXME(konishchev): https://wiki.osdev.org/PIC
-// When the CPU finishes handling the interrupt, it tells the PIC that it's OK to resume sending interrupts:
-// mov al,20h
-// out 20h,al
-// or if the interrupt came from the slave PIC:
-// mov al, 20h
-// out A0h, al
-// out 20h, al

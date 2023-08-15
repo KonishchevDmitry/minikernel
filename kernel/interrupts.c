@@ -43,10 +43,26 @@ static IdtDescriptor IDTR = {
     .limit = sizeof IDT - 1,
 };
 
-void (*INTERRUPT_HANDLERS[IDT_MAX_ENTRIES])(int irq);
+static volatile size_t TOTAL_SPURIOUS_INTERRUPTS = 0;
+static void (*INTERRUPT_HANDLERS[IDT_MAX_ENTRIES])(int irq);
 
 #pragma GCC push_options
 #pragma GCC target("general-regs-only")
+    void handle_interrupt(int irq) {
+        PicIrq pic_irq;
+        bool is_pic_irq = classify_irq(irq, &pic_irq);
+
+        if(is_pic_irq && pic_irq.spurious) {
+            TOTAL_SPURIOUS_INTERRUPTS++;
+        } else {
+            INTERRUPT_HANDLERS[irq](irq);
+        }
+
+        if(is_pic_irq) {
+            ack_irq(pic_irq);
+        }
+    }
+
     static void default_interrupt_handler(int irq) {
         panic("Unsupported interrupt received: #%d.", irq);
     }
@@ -63,4 +79,16 @@ void configure_interrupts() {
         "lidt (%[idtr])"
         :: [idtr] "m"(IDTR)
     );
+}
+
+static size_t REPORTED_SPURIOUS_INTERRUPTS = 0;
+
+void interrupts_health_check() {
+    size_t spurious_interrupts = TOTAL_SPURIOUS_INTERRUPTS;
+    if(REPORTED_SPURIOUS_INTERRUPTS == spurious_interrupts) {
+        return;
+    }
+
+    printlnf("Got %d spurious interrupts.", spurious_interrupts - REPORTED_SPURIOUS_INTERRUPTS);
+    REPORTED_SPURIOUS_INTERRUPTS = spurious_interrupts;
 }
