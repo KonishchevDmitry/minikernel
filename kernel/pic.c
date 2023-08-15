@@ -1,5 +1,8 @@
-// 8259 Interrupt Controller (PIC) support
-// See https://wiki.osdev.org/PIC for details
+// 8259 Programmable Interrupt Controller support
+//
+// See for details:
+// * https://wiki.osdev.org/PIC
+// * http://www.brokenthorn.com/Resources/OSDevPic.html
 
 #include <types.h>
 
@@ -7,13 +10,15 @@
 #include "pic.h"
 #include "textio.h"
 
+const u8 PIC_PORTS = 8;
+const u8 SLAVE_PIN = 2;
+
 const u16 MASTER_COMMAND_PORT = 0x20;
 const u16 MASTER_DATA_PORT = 0x21;
 
 const u16 SLAVE_COMMAND_PORT = 0xA0;
 const u16 SLAVE_PIC_DATA_PORT = 0xA1;
 
-const u8 PIC_PORTS = 8;
 const u8 MASTER_OFFSET = 0x20;
 const u8 SLAVE_OFFSET = MASTER_OFFSET + PIC_PORTS;
 
@@ -51,8 +56,8 @@ void configure_pic() {
     outb(MASTER_DATA_PORT, MASTER_OFFSET);
     outb(SLAVE_PIC_DATA_PORT, SLAVE_OFFSET);
 
-    outb(MASTER_DATA_PORT,    1 << 2); // Where slave is connected
-    outb(SLAVE_PIC_DATA_PORT, 1 << 1); // Where master is connected
+    outb(MASTER_DATA_PORT, 1 << SLAVE_PIN);
+    outb(SLAVE_PIC_DATA_PORT, SLAVE_PIN);
 
     outb(MASTER_DATA_PORT, ICW4_8086);
     outb(SLAVE_PIC_DATA_PORT, ICW4_8086);
