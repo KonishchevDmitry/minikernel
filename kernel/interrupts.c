@@ -29,19 +29,7 @@ typedef struct {
 
 static_assert(sizeof(IdtEntry) == IDT_ENTRY_SIZE, "Unexpected IDT entry size");
 
-typedef struct {
-    u16 limit;
-    void* base;
-} __attribute__((packed)) IdtDescriptor;
-
-static_assert(sizeof(IdtDescriptor) == 6, "Unexpected IDTR size");
-
 extern IdtEntry IDT[IDT_MAX_ENTRIES];
-
-static IdtDescriptor IDTR = {
-    .base = IDT,
-    .limit = sizeof IDT - 1,
-};
 
 static volatile size_t TOTAL_SPURIOUS_INTERRUPTS = 0;
 static void (*INTERRUPT_HANDLERS[IDT_MAX_ENTRIES])(int irq);
@@ -75,9 +63,17 @@ void configure_interrupts() {
         INTERRUPT_HANDLERS[irq] = default_interrupt_handler;
     }
 
+    struct {
+        u16 limit;
+        void* base;
+    } __attribute__((packed)) idtr = {
+        .base = IDT,
+        .limit = sizeof IDT - 1,
+    };
+
     asm volatile (
-        "lidt (%[idtr])"
-        :: [idtr] "m"(IDTR)
+        "lidt %[idtr]"
+        :: [idtr] "m"(idtr)
     );
 }
 

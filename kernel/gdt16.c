@@ -33,13 +33,6 @@ typedef struct {
 
 static_assert(sizeof(GdtEntry) == GDT_ENTRY_SIZE, "Unexpected GDT entry size");
 
-typedef struct {
-    u16 limit;
-    void* base;
-} __attribute__((packed)) GdtDescriptor;
-
-static_assert(sizeof(GdtDescriptor) == 6, "Unexpected GDTR size");
-
 static GdtEntry GDT[] = {
     {},
     [GDT_KERNEL_CODE_INDEX] = {
@@ -123,17 +116,20 @@ static GdtEntry GDT[] = {
 
 static_assert(sizeof GDT / sizeof GDT[0] == 5, "Unexpected GDT size");
 
-static GdtDescriptor GDTR = {
-    .base = GDT,
-    .limit = sizeof GDT - 1,
-};
-
 // Please note that:
 // * Real mode knows nothing about GDT, so it doesn't affect it
 // * Changing GDT actually doesn't apply the changes: they will be applied only on segment register change.
 void configure_gdt() {
+    struct {
+        u16 limit;
+        void* base;
+    } __attribute__((packed)) gdtr = {
+        .base = GDT,
+        .limit = sizeof GDT - 1,
+    };
+
     asm volatile (
-        "lgdt (%[gdtr])"
-        :: [gdtr] "m"(GDTR)
+        "lgdt %[gdtr]"
+        :: [gdtr] "m"(gdtr)
     );
 }
