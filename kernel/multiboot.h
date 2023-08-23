@@ -19,18 +19,18 @@ typedef struct {
 } __attribute__((packed)) MultibootTagHeader;
 
 typedef struct {
+    MultibootTagHeader tag;
+    u32 entry_size;
+    u32 entry_version;
+    char entries[0];
+} __attribute__((packed)) MultibootTagMmap;
+
+typedef struct {
     u64 addr;
     u64 size;
     u32 type;
     u32 reserved;
 } __attribute__((packed)) MultibootMmapEntry;
-
-typedef struct {
-    MultibootTagHeader tag;
-    u32 entry_size;
-    u32 entry_version;
-    MultibootMmapEntry entries[0];
-} __attribute__((packed)) MultibootTagMmap;
 
 enum MultibootInfoFlags {
     MULTIBOOT_TAG_TYPE_END  = 0,
