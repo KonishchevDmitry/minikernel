@@ -48,7 +48,7 @@ void configure_pic() {
     u8 master_mask = inb(MASTER_DATA_PORT);
     u8 slave_mask = inb(SLAVE_PIC_DATA_PORT);
 
-    printlnf("Remapping PIC (master_mask=%bb, slave_mask=%bb)...", master_mask, slave_mask);
+    printlnf("Remapping PIC (master_mask=%bB, slave_mask=%bB)...", master_mask, slave_mask);
 
     outb(MASTER_COMMAND_PORT, ICW1_INIT | ICW1_ICW4);
     outb(SLAVE_COMMAND_PORT, ICW1_INIT | ICW1_ICW4);

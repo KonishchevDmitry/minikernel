@@ -14,29 +14,84 @@ static void print_string(const char* s) {
     }
 }
 
-static void print_digit(int value) {
+static void print_signed_number(i64 value) {
     if(value < 0) {
         printc('-');
     } else {
         value = -value;
     }
 
-    int mul = 1;
+    i64 mul = 1;
     while(value / mul <= -10) {
         mul *= 10;
     }
 
     while(mul > 0) {
-        int digit = -(value / mul);
+        i64 digit = -(value / mul);
         printc('0' + digit);
         value += digit * mul;
         mul /= 10;
     }
 }
 
-static void print_binary(u32 value, int bits) {
-    for(u32 mask = 1 << (bits - 1); mask != 0; mask >>= 1) {
+static void print_unsigned_number(u64 value) {
+    u64 mul = 1;
+    while(value / mul >= 10) {
+        mul *= 10;
+    }
+
+    while(mul > 0) {
+        u64 digit = value / mul;
+        printc('0' + digit);
+        value -= digit * mul;
+        mul /= 10;
+    }
+}
+
+static char hex_char(u8 value) {
+    if(value < 10) {
+        return '0' + value;
+    } else {
+        return 'A' + (value - 10);
+    }
+}
+
+static void print_hex(u64 value, int bits) {
+    while(bits > 0) {
+        bits -= 8;
+
+        u8 byte = (value >> bits) & 0xFF;
+        printc(hex_char(byte >> 4));
+        printc(hex_char(byte & 0xF));
+    }
+}
+
+static void print_binary(u64 value, int bits) {
+    for(u64 mask = 1 << (bits - 1); mask != 0; mask >>= 1) {
         printc('0' + ((value & mask) != 0));
+    }
+}
+
+static bool printf_number(char format, int bits, u64 value) {
+    switch(format) {
+        case 'd':
+            print_signed_number(value);
+            return true;
+
+        case 'u':
+            print_unsigned_number(value);
+            return true;
+
+        case 'x':
+            print_hex(value, bits);
+            return true;
+
+        case 'B':
+            print_binary(value, bits);
+            return true;
+
+        default:
+            return false;
     }
 }
 
@@ -54,36 +109,46 @@ void printf_args(const char* s, va_list args) {
                 printc(va_arg(args, int));
                 break;
 
+            case 's':
+                print_string(va_arg(args, const char*));
+                break;
+
             case 'd':
-                print_digit(va_arg(args, int));
+            case 'u':
+            case 'x':
+            case 'B':
+                if(!printf_number(c, sizeof(int) * 8, va_arg(args, int))) {
+                    print_string(s - 2);
+                    return;
+                }
                 break;
 
             case 'b':
-                int bits;
-
-                switch((c = *s++)) {
-                    case 'b':
-                        bits = 8;
-                        break;
-
-                    case 'w':
-                        bits = 16;
-                        break;
-
-                    case 'd':
-                        bits = 32;
-                        break;
-
-                    default:
-                        print_string(s - 3);
-                        return;
+                if(!printf_number(*s++, 8, va_arg(args, int))) {
+                    print_string(s - 3);
+                    return;
                 }
-
-                print_binary(va_arg(args, int), bits);
                 break;
 
-            case 's':
-                print_string(va_arg(args, const char*));
+            case 'w':
+                if(!printf_number(*s++, 16, va_arg(args, int))) {
+                    print_string(s - 3);
+                    return;
+                }
+                break;
+
+            case 'l':
+                if(!printf_number(*s++, 32, va_arg(args, int))) {
+                    print_string(s - 3);
+                    return;
+                }
+                break;
+
+            case 'q':
+                if(!printf_number(*s++, 64, va_arg(args, u64))) {
+                    print_string(s - 3);
+                    return;
+                }
                 break;
 
             case '%':
