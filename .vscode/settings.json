@@ -6,5 +6,8 @@
             "icon": "terminal-tmux"
         }
     },
-    "terminal.integrated.defaultProfile.linux": "tmux"
+    "terminal.integrated.defaultProfile.linux": "tmux",
+    "files.associations": {
+        "*.h": "c"
+    }
 }

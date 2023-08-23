@@ -45,6 +45,6 @@ enum MultibootMemoryType {
     MULTIBOOT_MEMORY_BADRAM           = 5,
 };
 
-void* multiboot_get_data(MultibootInfo* info, size_t offset, size_t size);
+const void* multiboot_get_data(const MultibootInfo* info, size_t offset, size_t size);
 
 #endif

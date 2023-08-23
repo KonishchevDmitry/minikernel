@@ -1,9 +1,9 @@
 #include "memory.h"
 #include "textio.h"
 
-error __must_check configure_memory(MultibootTagMmap* mmap) {
-    void* start = mmap->entries;
-    void* end = start - sizeof(MultibootTagMmap) + mmap->tag.size;
+error __must_check configure_memory(const MultibootTagMmap* mmap) {
+    const void* start = mmap->entries;
+    const void* end = start - sizeof(MultibootTagMmap) + mmap->tag.size;
 
     if(
         mmap->tag.type != MULTIBOOT_TAG_TYPE_MMAP ||
@@ -17,7 +17,7 @@ error __must_check configure_memory(MultibootTagMmap* mmap) {
 
     bool huge = false;
     while(start < end) {
-        MultibootMmapEntry* mmap_entry = start;
+        const MultibootMmapEntry* mmap_entry = start;
         huge |= mmap_entry->addr > 0xFFFFFFFF || mmap_entry->size > 0xFFFFFFFF;
 
         const char* type = "other";
