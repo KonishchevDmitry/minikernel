@@ -14,6 +14,10 @@ _start:
 
     call ensure_a20_address_line
 
+    calll collect_multiboot_info
+    test %eax, %eax
+    jnz _multiboot_info_error
+
     cli
         calll configure_gdt
 
@@ -24,6 +28,12 @@ _start:
         // segment registers.
 
         ljmp $(GDT_KERNEL_CODE_INDEX * GDT_ENTRY_SIZE), $_start_32
+
+    _multiboot_info_error:
+        push %ax
+        push $_multiboot_info_error_message
+        call real_mode_panic
+        _multiboot_info_error_message: .string "Failed to collect multiboot info: %s."
 
     _greeting_message: .string "Kernel is running..."
 
@@ -54,7 +64,8 @@ _start_32:
         add $4, %esp
     sti
 
-    jmp main
+    push $MULTIBOOT_INFO
+    call kmain
 
     _protected_mode_greeting_message: .string "Entered protected mode."
 
