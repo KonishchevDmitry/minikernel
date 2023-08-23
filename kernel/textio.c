@@ -14,9 +14,41 @@ static void print_string(const char* s) {
     }
 }
 
-static void print_signed_number(i64 value) {
-    if(value < 0) {
-        printc('-');
+static void pad_number(bool is_signed, int bits, int len) {
+    int max_len;
+
+    switch(bits) {
+        case 8:
+            max_len = 3;
+            break;
+        case 16:
+            max_len = 5;
+            break;
+        case 32:
+            max_len = 10;
+            break;
+        case 64:
+            max_len = 20;
+            break;
+        default:
+            return;
+    }
+
+    if(is_signed && bits != 64) {
+        max_len++;
+    }
+
+    for(int i = len; i < max_len; i++) {
+        printc(' ');
+    }
+}
+
+static void print_signed_number(i64 value, int bits, bool padded) {
+    int len = 1;
+    bool negative = value < 0;
+
+    if(negative) {
+        len++;
     } else {
         value = -value;
     }
@@ -24,6 +56,15 @@ static void print_signed_number(i64 value) {
     i64 mul = 1;
     while(value / mul <= -10) {
         mul *= 10;
+        len++;
+    }
+
+    if(padded) {
+        pad_number(true, bits, len);
+    }
+
+    if(negative) {
+        printc('-');
     }
 
     while(mul > 0) {
@@ -34,10 +75,17 @@ static void print_signed_number(i64 value) {
     }
 }
 
-static void print_unsigned_number(u64 value) {
+static void print_unsigned_number(u64 value, int bits, bool padded) {
     u64 mul = 1;
+    int len = 1;
+
     while(value / mul >= 10) {
         mul *= 10;
+        len++;
+    }
+
+    if(padded) {
+        pad_number(false, bits, len);
     }
 
     while(mul > 0) {
@@ -75,11 +123,13 @@ static void print_binary(u64 value, int bits) {
 static bool printf_number(char format, int bits, u64 value) {
     switch(format) {
         case 'd':
-            print_signed_number(value);
+        case 'D':
+            print_signed_number(value, bits, format == 'D');
             return true;
 
         case 'u':
-            print_unsigned_number(value);
+        case 'U':
+            print_unsigned_number(value, bits, format == 'U');
             return true;
 
         case 'x':
@@ -114,7 +164,9 @@ void printf_args(const char* s, va_list args) {
                 break;
 
             case 'd':
+            case 'D':
             case 'u':
+            case 'U':
             case 'x':
             case 'B':
                 if(!printf_number(c, sizeof(int) * 8, va_arg(args, int))) {
