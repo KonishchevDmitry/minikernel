@@ -2,7 +2,8 @@
 
 .code16
 
-header:
+.global KERNEL_HEADER
+KERNEL_HEADER:
 kernel_size:
     .word 0
 

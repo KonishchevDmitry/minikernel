@@ -1,3 +1,6 @@
+#ifndef TYPES_H
+#define TYPES_H
+
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -18,4 +21,7 @@ typedef __INTPTR_TYPE__ ptrdiff_t;
 
 typedef const char* error;
 
+#define UINT32_MAX 0xFFFFFFFF
 #define __must_check __attribute__((warn_unused_result))
+
+#endif
