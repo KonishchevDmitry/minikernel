@@ -3,7 +3,10 @@ BUILD_DIR := ./build
 .PHONY: all boot boot-vnc bootloader clean debug gdb-boot gdb-kernel image kernel test
 .EXTRA_PREREQS := Makefile | $(BUILD_DIR)
 
-BOOT_CMD := qemu-system-i386 -drive file=$(BUILD_DIR)/disk.img,format=raw -monitor stdio
+BOOT_CMD := \
+	qemu-system-i386 -name minikernel,process=minikernel,debug-threads=on \
+	-machine type=pc,accel=kvm -cpu host -smp cores=1 -m 16M -drive file=$(BUILD_DIR)/disk.img,format=raw \
+	-nodefaults -vga std -monitor stdio
 GDB_CMD := gdb --quiet --command debug.gdb
 
 all: test boot
