@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <stddef.h>
 
 typedef __INT8_TYPE__   i8;
 typedef __INT16_TYPE__ i16;
@@ -14,3 +15,7 @@ typedef __SIZE_TYPE__   size_t;
 typedef __INTPTR_TYPE__ ssize_t;
 
 typedef __INTPTR_TYPE__ ptrdiff_t;
+
+typedef const char* error;
+
+#define __must_check __attribute__((warn_unused_result))
