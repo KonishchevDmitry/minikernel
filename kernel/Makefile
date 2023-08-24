@@ -23,17 +23,11 @@ $(BUILD_DIR)/kernel.img: $(BUILD_DIR)/kernel.bin
 $(BUILD_DIR)/kernel.bin: $(BUILD_DIR)/kernel
 	objcopy -O binary $< $@
 
-$(BUILD_DIR)/kernel: $(patsubst %, $(BUILD_DIR)/%.o, kernel bootstrap gdt16 idt libasm_real_mode main vga interrupts pic textio misc)
-	ld $(LDFLAGS) --section-start=.text=0x7E00 --omagic -o $@ $^
+REAL_MODE_OBJECTS := kernel16_asm libasm_real_mode bootstrap16_asm multiboot16 gdt16 idt16_asm
+PROTECTED_MODE_OBJECTS := interrupts kmain memory misc multiboot pic textio vga
 
-$(BUILD_DIR)/kernel.o: kernel.S
-	gcc $(ASFLAGS) -o $@ $<
-
-$(BUILD_DIR)/bootstrap.o: bootstrap.S
-	gcc $(ASFLAGS) -o $@ $<
-
-$(BUILD_DIR)/idt.o: idt.S
-	gcc $(ASFLAGS) -o $@ $<
+$(BUILD_DIR)/kernel: $(patsubst %, $(BUILD_DIR)/%.o, $(REAL_MODE_OBJECTS) $(PROTECTED_MODE_OBJECTS))
+	ld $(LDFLAGS) --section-start=.text=0x7E00 --omagic -o $@ $^ $$(gcc -m32 $(CFLAGS) -print-libgcc-file-name)
 
 idt.S: generate-idt
 	./generate-idt
@@ -42,7 +36,10 @@ $(BUILD_DIR)/libasm_real_mode.o: $(BUILD_DIR)/libasm16.o
 	objcopy --prefix-symbols=real_mode_ $< $@
 
 $(BUILD_DIR)/libasm16.o: ../lib/asm.S
-	gcc $(ASFLAGS) -D ARCH_BITS=16 -o $@ $<
+	gcc -m32 $(ASFLAGS) -D ARCH_BITS=16 -o $@ $<
+
+$(BUILD_DIR)/%_asm.o: %.S
+	gcc -m32 $(ASFLAGS) -o $@ $<
 
 $(BUILD_DIR)/%16.o: %16.c $(HEADERS)
 	gcc -m16 $(CFLAGS) -o $@ $<
