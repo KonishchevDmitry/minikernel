@@ -1,11 +1,11 @@
 // See https://wiki.osdev.org/Memory_Map_(x86) for details
 
 #include "kernel.h"
-#include "memory.h"
 #include "misc.h"
+#include "pm.h"
 #include "textio.h"
+#include "vm.h"
 
-#define PAGE_SIZE 4096
 #define MAX_ADDR UINT32_MAX
 #define MAX_PAGES (((u64) MAX_ADDR + 1) / PAGE_SIZE)
 
@@ -68,7 +68,7 @@ static void pm_add_memory(u64 addr, u64 size) {
     }
 }
 
-error __must_check configure_memory(const MultibootTagMmap* mmap) {
+error __must_check pm_configure(const MultibootTagMmap* mmap) {
     physaddr_t kernel_start = (physaddr_t) &KERNEL_HEADER;
     physaddr_t kernel_end = kernel_start + KERNEL_HEADER.kernel_size;
 

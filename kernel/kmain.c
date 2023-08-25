@@ -1,9 +1,9 @@
 #include <types.h>
 
 #include "interrupts.h"
-#include "memory.h"
 #include "misc.h"
 #include "multiboot.h"
+#include "pm.h"
 #include "textio.h"
 
 static error __must_check configure(const MultibootInfo* multiboot_info) {
@@ -29,7 +29,7 @@ static error __must_check configure(const MultibootInfo* multiboot_info) {
                 return "Unexpected end of multiboot info";
             }
 
-            if((err = configure_memory(mmap))) {
+            if((err = pm_configure(mmap))) {
                 return err;
             }
             memory_configured = true;

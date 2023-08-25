@@ -5,6 +5,6 @@
 
 #include "multiboot.h"
 
-error __must_check configure_memory(const MultibootTagMmap* mmap);
+error __must_check pm_configure(const MultibootTagMmap* mmap);
 
 #endif
