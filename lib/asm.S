@@ -37,12 +37,14 @@ prints:
         leave
         ret
 
+#if !ASMLIB_MINIMAL
 // void printf(const char* format, ...)
 .global printf
 .type printf, @function
 printf:
     call printf_inner
     ret
+#endif
 
 // void printlnf(const char* format, ...)
 .global printlnf
