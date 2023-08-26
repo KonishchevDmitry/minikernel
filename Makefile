@@ -5,8 +5,12 @@ BUILD_DIR := ./build
 
 BOOT_CMD := \
 	qemu-system-i386 -name minikernel,process=minikernel,debug-threads=on \
-	-machine type=pc,accel=kvm -cpu host -smp cores=1 -m 16M -drive file=$(BUILD_DIR)/disk.img,format=raw \
+	-smp cores=1 -m 16M -drive file=$(BUILD_DIR)/disk.img,format=raw \
 	-nodefaults -vga std -monitor stdio
+
+BOOT_ARGS := -machine type=pc,accel=kvm -cpu host
+DEBUG_ARGS := -machine type=pc -cpu qemu32
+
 GDB_CMD := gdb --quiet --command debug.gdb
 
 all: test boot
@@ -15,13 +19,13 @@ test: image
 	make -C linux
 
 boot: image
-	$(BOOT_CMD) -display curses
+	$(BOOT_CMD) $(BOOT_ARGS) -display curses
 
 boot-vnc: image
-	$(BOOT_CMD) -display none -vnc unix:$(BUILD_DIR)/vnc.socket
+	$(BOOT_CMD) $(BOOT_ARGS) -display none -vnc unix:$(BUILD_DIR)/vnc.socket
 
 debug: image
-	$(BOOT_CMD) -display curses -S -gdb unix:$(BUILD_DIR)/gdb.socket,server,nowait
+	$(BOOT_CMD) $(DEBUG_ARGS) -display curses -S -gdb unix:$(BUILD_DIR)/gdb.socket,server,nowait
 
 gdb-boot:
 	$(GDB_CMD) --symbols bootloader/build/bootloader
