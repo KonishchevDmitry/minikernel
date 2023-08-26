@@ -1,26 +1,44 @@
 // Kernel MBR bootloader
 //
-// The labels have absolute values with 0x7C00 shift, so we don't need to alter any segment registers
+// See https://wiki.osdev.org/MBR_(x86) for details
 
 .code16
 
 .global _start
 _start:
+    jmp $0, $_init_segment_registers
+    _init_segment_registers:
+        mov $0, %ax
+        mov %ax, %ds
+        mov %ax, %es
+        mov %ax, %fs
+        mov %ax, %gs
+        mov %ax, %ss
+        mov $_start, %sp
+
+    movzxb %dl, %bx # drive number
+
     push $(_end - _start + 2)
     push $_greeting_message
     call printlnf
     add $4, %sp
 
+    push %bx
     call load_kernel
+    add $2, %sp
+
     jmp kernel_start + 2
 
     _greeting_message: .string "Bootloader is running (size=%d)..."
 
-// void load_kernel()
+// void load_kernel(int drive_number)
 load_kernel:
-    push $0 # buffer offset
-    push $1 # count
-    push $1 # start sector
+    enter $0, $0
+
+    push $0     # buffer offset
+    push $1     # count
+    push $1     # start sector
+    push 4(%bp) # drive number
     call read_disk
     add $6, %sp
 
@@ -34,9 +52,10 @@ load_kernel:
     dec %ax
     jz _load_kernel_return
 
-    push $512 # buffer offset
-    push %ax  # count
-    push $2   # start sector
+    push $512   # buffer offset
+    push %ax    # count
+    push $2     # start sector
+    push 4(%bp) # drive number
     call read_disk
     add $6, %sp
 
@@ -44,6 +63,8 @@ load_kernel:
         push $_kernel_loaded_message
         call printlnf
         add $2, %sp
+
+        leave
         ret
 
     _kernel_loading_message: .string "Loading kernel (size=%d)..."
@@ -63,23 +84,23 @@ get_kernel_sectors:
     _get_kernel_sector_return:
         ret
 
-// void read_disk(int start_sector, int sector_count, int buffer_offset)
+// void read_disk(int drive_number, int start_sector, int sector_count, int buffer_offset)
 read_disk:
     enter $0, $0
     push %si
 
-    mov 8(%bp), %ax
+    mov 10(%bp), %ax
     mov %ax, _read_disk_memory_offset
 
-    mov 6(%bp), %ax
+    mov 8(%bp), %ax
     mov %ax, _read_disk_sector_count
 
-    mov 4(%bp), %ax
+    mov 6(%bp), %ax
     mov %ax, _read_disk_start_sector
 
     // https://wiki.osdev.org/ATA_in_x86_RealMode_(BIOS)
     mov $0x42, %ah # Extended Read Sectors From Drive
-    mov $0x80, %dl # First HDD
+    mov 4(%bp), %dx # Drive number
     mov $_read_disk_address_packet, %si
     int $0x13
     jc _read_disk_error
@@ -115,6 +136,7 @@ printc:
     jmp printc_bios
 
 #define ARCH_BITS 16
+#define ASMLIB_MINIMAL 1
 #include "../lib/asm.S"
 
 _end:
@@ -124,6 +146,5 @@ _end:
 .word 0xAA55
 
 // See https://wiki.osdev.org/Memory_Map_(x86) for usable memory details
-// Stack starts at 0x6F04.
 kernel_start:
 kernel_size:
