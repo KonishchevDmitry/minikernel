@@ -26,6 +26,7 @@ $(BUILD_DIR)/kernel.bin: $(BUILD_DIR)/kernel
 REAL_MODE_OBJECTS := kernel16_asm libasm_real_mode bootstrap16_asm multiboot16 gdt16 idt16_asm
 PROTECTED_MODE_OBJECTS := interrupts kmain misc multiboot pic pm textio vga
 
+# Requires gcc-multilib package
 $(BUILD_DIR)/kernel: $(patsubst %, $(BUILD_DIR)/%.o, $(REAL_MODE_OBJECTS) $(PROTECTED_MODE_OBJECTS))
 	ld $(LDFLAGS) --section-start=.text=0x7E00 --omagic -o $@ $^ $$(gcc -m32 $(CFLAGS) -print-libgcc-file-name)
 
