@@ -52,7 +52,9 @@ static void (*INTERRUPT_HANDLERS[IDT_MAX_ENTRIES])(int irq);
     }
 
     static void default_interrupt_handler(int irq) {
-        panic("Unsupported interrupt received: #%d.", irq);
+        if(irq != PIC_TIMER_IRQ) {
+            panic("Unsupported interrupt received: #%d.", irq);
+        }
     }
 #pragma GCC pop_options
 

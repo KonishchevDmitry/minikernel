@@ -10,27 +10,22 @@
 #include "pic.h"
 #include "textio.h"
 
-const u8 PIC_PORTS = 8;
-const u8 SLAVE_PIN = 2;
+static const u8 SLAVE_PIN = 2;
 
-const u16 MASTER_COMMAND_PORT = 0x20;
-const u16 MASTER_DATA_PORT = 0x21;
+static const u16 MASTER_COMMAND_PORT = 0x20;
+static const u16 MASTER_DATA_PORT = 0x21;
 
-const u16 SLAVE_COMMAND_PORT = 0xA0;
-const u16 SLAVE_PIC_DATA_PORT = 0xA1;
-
-const u8 MASTER_OFFSET = 0x20;
-const u8 SLAVE_OFFSET = MASTER_OFFSET + PIC_PORTS;
+static const u16 SLAVE_COMMAND_PORT = 0xA0;
+static const u16 SLAVE_PIC_DATA_PORT = 0xA1;
 
 // Initialization Command Words (ICW)
-const u8 ICW1_INIT = 0x10; // Initialization
-const u8 ICW1_ICW4 = 0x01; // Indicates that ICW4 will be present
-const u8 ICW4_8086 = 0x01; // 8086/88 (MCS-80/85) mode
+static const u8 ICW1_INIT = 0x10; // Initialization
+static const u8 ICW1_ICW4 = 0x01; // Indicates that ICW4 will be present
+static const u8 ICW4_8086 = 0x01; // 8086/88 (MCS-80/85) mode
 
 // Operation Command Words (OCW)
-const u8 OCW2_EOI      = 0x20; // Non-specific End-of-interrupt
-const u8 OCW3_READ_IRR = 0x0A; // Read Interrupt Request Register (queued IRQ)
-const u8 OCW3_READ_ISR = 0x0B; // Read In-Service Register (sent IRQ which hasn't been acked yet)
+static const u8 OCW2_EOI      = 0x20; // Non-specific End-of-interrupt
+static const u8 OCW3_READ_ISR = 0x0B; // Read In-Service Register (sent IRQ which hasn't been acked yet)
 
 static u8 get_status_register(bool master, u8 ocw3) {
     u16 port = master ? MASTER_COMMAND_PORT : SLAVE_COMMAND_PORT;
@@ -53,8 +48,8 @@ void configure_pic() {
     outb(MASTER_COMMAND_PORT, ICW1_INIT | ICW1_ICW4);
     outb(SLAVE_COMMAND_PORT, ICW1_INIT | ICW1_ICW4);
 
-    outb(MASTER_DATA_PORT, MASTER_OFFSET);
-    outb(SLAVE_PIC_DATA_PORT, SLAVE_OFFSET);
+    outb(MASTER_DATA_PORT, PIC_MASTER_OFFSET);
+    outb(SLAVE_PIC_DATA_PORT, PIC_SLAVE_OFFSET);
 
     outb(MASTER_DATA_PORT, 1 << SLAVE_PIN);
     outb(SLAVE_PIC_DATA_PORT, SLAVE_PIN);
@@ -67,11 +62,11 @@ void configure_pic() {
 }
 
 bool classify_irq(u8 irq, PicIrq* pic_irq) {
-    if(irq < MASTER_OFFSET || irq >= SLAVE_OFFSET + PIC_PORTS) {
+    if(irq < PIC_MASTER_OFFSET || irq >= PIC_SLAVE_OFFSET + PIC_PORTS) {
         return false;
     }
 
-    bool master = irq < SLAVE_OFFSET;
+    bool master = irq < PIC_SLAVE_OFFSET;
     u8 interrupt = irq % PIC_PORTS;
 
     // See https://wiki.osdev.org/PIC#Spurious_IRQs for details
