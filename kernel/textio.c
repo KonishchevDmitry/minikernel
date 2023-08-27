@@ -115,7 +115,7 @@ static void print_hex(u64 value, int bits) {
 }
 
 static void print_binary(u64 value, int bits) {
-    for(u64 mask = 1 << (bits - 1); mask != 0; mask >>= 1) {
+    for(u64 mask = (u64) 1 << (bits - 1); mask != 0; mask >>= 1) {
         printc('0' + ((value & mask) != 0));
     }
 }
