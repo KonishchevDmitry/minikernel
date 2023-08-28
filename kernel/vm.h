@@ -3,4 +3,6 @@
 
 #define PAGE_SIZE 4096
 
+void vm_configure();
+
 #endif

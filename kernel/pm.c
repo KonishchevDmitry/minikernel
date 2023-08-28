@@ -1,5 +1,7 @@
 // See https://wiki.osdev.org/Memory_Map_(x86) for details
 
+#include <constants.h>
+
 #include "kernel.h"
 #include "misc.h"
 #include "pm.h"
@@ -8,8 +10,6 @@
 
 #define MAX_ADDR UINT32_MAX
 #define MAX_PAGES (((u64) MAX_ADDR + 1) / PAGE_SIZE)
-
-typedef size_t physaddr_t;
 
 typedef struct {
     size_t page_id;
@@ -144,6 +144,6 @@ error __must_check pm_configure(const MultibootTagMmap* mmap) {
         return "Got an unsupported memory map";
     }
 
-    printlnf("Available memory: %u", PM_TABLE->size * PAGE_SIZE);
+    printlnf("Available memory: %u KB", PM_TABLE->size * PAGE_SIZE / KB);
     return NULL;
 }

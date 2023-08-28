@@ -5,11 +5,12 @@
 #include "multiboot.h"
 #include "pm.h"
 #include "textio.h"
+#include "vm.h"
 
 static error __must_check configure(const MultibootInfo* multiboot_info) {
     error err;
     size_t multiboot_offset = 0;
-    bool memory_configured = 0;
+    const MultibootTagMmap* mmap = NULL;
 
     while(true) {
         const MultibootTagHeader* tag = multiboot_get_data(multiboot_info, multiboot_offset, sizeof(MultibootTagHeader));
@@ -20,27 +21,27 @@ static error __must_check configure(const MultibootInfo* multiboot_info) {
         }
 
         if(tag->type == MULTIBOOT_TAG_TYPE_MMAP) {
-            if(tag->size < sizeof(MultibootTagMmap) || memory_configured) {
+            if(tag->size < sizeof(MultibootTagMmap) || mmap) {
                 return "Got an invalid mmap";
             }
 
-            const MultibootTagMmap* mmap = multiboot_get_data(multiboot_info, multiboot_offset, tag->size);
-            if(!mmap) {
+            if(!(mmap = multiboot_get_data(multiboot_info, multiboot_offset, tag->size))) {
                 return "Unexpected end of multiboot info";
             }
-
-            if((err = pm_configure(mmap))) {
-                return err;
-            }
-            memory_configured = true;
         }
 
         multiboot_offset += tag->size;
     }
 
-    if(!memory_configured) {
+    if(!mmap) {
         return "Multiboot info has no memory map";
     }
+
+    if((err = pm_configure(mmap))) {
+        return err;
+    }
+
+    vm_configure();
 
     return NULL;
 }
