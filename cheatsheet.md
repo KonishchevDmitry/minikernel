@@ -54,3 +54,7 @@ Print memory – `x/nyz &label`:
 * `n` – count
 * `y` – c/d/x
 * `z` – b (byte), h (2 bytes), w (4 bytes)
+
+Print assembly code - `x/10i $eip`
+
+Switch to physical memory - `maintenance packet Qqemu.PhyMemMode:1`
