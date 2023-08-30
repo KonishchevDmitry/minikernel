@@ -21,6 +21,12 @@ void outb(u16 port, u8 value) {
     );
 }
 
+void memzero(void* ptr, size_t size) {
+    for(size_t i = 0; i < size; i++) {
+        ((u8*) ptr)[i] = 0;
+    }
+}
+
 void halt() {
     asm volatile ("cli");
 
