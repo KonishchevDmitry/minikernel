@@ -37,11 +37,14 @@ static error __must_check configure(const MultibootInfo* multiboot_info) {
         return "Multiboot info has no memory map";
     }
 
-    if((err = pm_configure(mmap))) {
+    pageframe_t vm_start_page, pm_end_page;
+    if((err = pm_configure(mmap, &vm_start_page, &pm_end_page))) {
         return err;
     }
 
-    vm_configure();
+    if((err = vm_configure(vm_start_page, pm_end_page))) {
+        return err;
+    }
 
     return NULL;
 }

@@ -8,36 +8,26 @@
 #include "textio.h"
 #include "vm.h"
 
-#define MAX_ADDR UINT32_MAX
-#define MAX_PAGES (((u64) MAX_ADDR + 1) / PAGE_SIZE)
-
 typedef struct {
-    size_t page_id;
+    pageframe_t page;
 } PhysicalMemoryTableEntry;
 
 typedef struct {
     size_t size;
-    size_t min_page_id;
-    PhysicalMemoryTableEntry free[MAX_PAGES];
+    pageframe_t min_page;
+    pageframe_t end_page;
+    PhysicalMemoryTableEntry free[MAX_PM_PAGES];
 } PhysicalMemoryTable;
 
 PhysicalMemoryTable* PM_TABLE = (PhysicalMemoryTable*) 0x00100000;
 
-// FIXME(konishchev): static or drop
-size_t pm_addr_to_page(physaddr_t addr) {
-    if(addr % PAGE_SIZE != 0) {
-        panic("An attempt to translate an invalid address to page number: %x", addr);
-    }
-    return addr / PAGE_SIZE;
-}
-
-static bool pm_has_page(size_t page_id) {
-    if(page_id < PM_TABLE->min_page_id) {
+static bool pm_has_page(pageframe_t page) {
+    if(page < PM_TABLE->min_page) {
         return true;
     }
 
     for(size_t i = 0; i < PM_TABLE->size; i++) {
-        if(PM_TABLE->free[i].page_id == page_id) {
+        if(PM_TABLE->free[i].page == page) {
             return true;
         }
     }
@@ -58,17 +48,24 @@ static void pm_add_memory(u64 addr, u64 size) {
         size -= offset;
     }
 
-    for(u64 end_page = page + size / PAGE_SIZE; page < end_page && page < MAX_PAGES; page++) {
+    for(u64 end_page = page + size / PAGE_SIZE; page < end_page && page < MAX_PM_PAGES; page++) {
         if(!pm_has_page(page)) {
-            if(PM_TABLE->size >= MAX_PAGES) {
+            if(PM_TABLE->size >= MAX_PM_PAGES) {
                 panic("Physical memory table overflow.");
             }
-            PM_TABLE->free[PM_TABLE->size++] = (PhysicalMemoryTableEntry){.page_id = page};
+
+            PM_TABLE->free[PM_TABLE->size++] = (PhysicalMemoryTableEntry){
+                .page = page
+            };
+
+            if(page >= PM_TABLE->end_page) {
+                PM_TABLE->end_page = page + 1;
+            }
         }
     }
 }
 
-error __must_check pm_configure(const MultibootTagMmap* mmap) {
+error __must_check pm_configure(const MultibootTagMmap* mmap, pageframe_t* vm_start_page, pageframe_t* pm_end_page) {
     physaddr_t kernel_start = (physaddr_t) &KERNEL_HEADER;
     physaddr_t kernel_end = kernel_start + KERNEL_HEADER.kernel_size;
 
@@ -129,10 +126,11 @@ error __must_check pm_configure(const MultibootTagMmap* mmap) {
 
             PM_TABLE->size = 0;
 
-            PM_TABLE->min_page_id = pm_table_end / PAGE_SIZE;
+            PM_TABLE->min_page = pm_table_end / PAGE_SIZE;
             if(pm_table_end % PAGE_SIZE != 0) {
-                PM_TABLE->min_page_id++;
+                PM_TABLE->min_page++;
             }
+            PM_TABLE->end_page = PM_TABLE->min_page;
 
             configured = true;
         }
@@ -145,5 +143,16 @@ error __must_check pm_configure(const MultibootTagMmap* mmap) {
     }
 
     printlnf("Available memory: %u KB", PM_TABLE->size * PAGE_SIZE / KB);
+
+    *vm_start_page = PM_TABLE->min_page;
+    *pm_end_page = PM_TABLE->end_page;
+
     return NULL;
+}
+
+pageframe_t __must_check pm_allocate_page() {
+    if(PM_TABLE->size == 0) {
+        return 0;
+    }
+    return PM_TABLE->free[--PM_TABLE->size].page;
 }
