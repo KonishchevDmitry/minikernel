@@ -1,6 +1,7 @@
 #include <types.h>
 
 #include "interrupts.h"
+#include "keyboard.h"
 #include "misc.h"
 #include "multiboot.h"
 #include "pm.h"
@@ -43,6 +44,10 @@ static error __must_check configure(const MultibootInfo* multiboot_info) {
     }
 
     if((err = vm_configure(vm_start_page, pm_end_page))) {
+        return err;
+    }
+
+    if((err = configure_keyboard())) {
         return err;
     }
 

@@ -24,7 +24,7 @@ $(BUILD_DIR)/kernel.bin: $(BUILD_DIR)/kernel
 	objcopy -O binary --set-section-flags .bss=alloc,load,contents $< $@
 
 REAL_MODE_OBJECTS := kernel16_asm libasm_real_mode bootstrap16_asm multiboot16 gdt16 idt16_asm
-PROTECTED_MODE_OBJECTS := interrupts kmain misc multiboot pic pm textio vga vm
+PROTECTED_MODE_OBJECTS := interrupts keyboard kmain misc multiboot pic pm textio vga vm
 
 # Requires gcc-multilib package
 $(BUILD_DIR)/kernel: $(patsubst %, $(BUILD_DIR)/%.o, $(REAL_MODE_OBJECTS) $(PROTECTED_MODE_OBJECTS))

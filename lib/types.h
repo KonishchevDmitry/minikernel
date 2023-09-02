@@ -17,7 +17,7 @@ typedef __UINT64_TYPE__ u64;
 typedef __SIZE_TYPE__   size_t;
 typedef __INTPTR_TYPE__ ssize_t;
 
-typedef __INTPTR_TYPE__ ptrdiff_t;
+typedef unsigned long register_t;
 
 typedef const char* error;
 

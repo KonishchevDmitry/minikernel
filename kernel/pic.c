@@ -61,7 +61,7 @@ void configure_pic() {
     outb(SLAVE_PIC_DATA_PORT, slave_mask);
 }
 
-bool classify_irq(u8 irq, PicIrq* pic_irq) {
+bool classify_irq(irq_t irq, PicIrq* pic_irq) {
     if(irq < PIC_MASTER_OFFSET || irq >= PIC_SLAVE_OFFSET + PIC_PORTS) {
         return false;
     }

@@ -122,7 +122,7 @@ error __must_check vm_configure(pageframe_t vm_start_page, pageframe_t pm_end_pa
         "mov %%cr0, %%eax\n\t"
         "or $0x80000000, %%eax\n\t"
         "mov %%eax, %%cr0"
-        :: [page_directory] "r"(directory) : "eax"
+        :: [page_directory] "r"(directory) : "eax", "memory"
     );
 
     physaddr_t mapped_value = *((physaddr_t*) physaddr_to_virtual((physaddr_t) &PAGE_DIRECTORY));

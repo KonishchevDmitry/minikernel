@@ -32,11 +32,10 @@ static_assert(sizeof(IdtEntry) == IDT_ENTRY_SIZE, "Unexpected IDT entry size");
 extern IdtEntry IDT[IDT_MAX_ENTRIES];
 
 static volatile size_t TOTAL_SPURIOUS_INTERRUPTS = 0;
-static void (*INTERRUPT_HANDLERS[IDT_MAX_ENTRIES])(int irq);
+static InterruptHandler INTERRUPT_HANDLERS[IDT_MAX_ENTRIES];
 
-#pragma GCC push_options
-#pragma GCC target("general-regs-only")
-    void handle_interrupt(int irq) {
+#include "isr_start.h"
+    void handle_interrupt(register_t irq) {
         PicIrq pic_irq;
         bool is_pic_irq = classify_irq(irq, &pic_irq);
 
@@ -51,12 +50,15 @@ static void (*INTERRUPT_HANDLERS[IDT_MAX_ENTRIES])(int irq);
         }
     }
 
-    static void default_interrupt_handler(int irq) {
-        if(irq != PIC_TIMER_IRQ) {
-            panic("Unsupported interrupt received: #%d.", irq);
+    static void default_interrupt_handler(irq_t irq) {
+        switch(irq) {
+        case PIC_TIMER_IRQ:
+        case PIC_KEYBOARD_IRQ:
+            return;
         }
+        panic("Unsupported interrupt received: #%d.", irq);
     }
-#pragma GCC pop_options
+#include "isr_end.h"
 
 void configure_interrupts() {
     configure_pic();
@@ -79,6 +81,14 @@ void configure_interrupts() {
     );
 }
 
+error __must_check set_interrupt_handler(irq_t irq, InterruptHandler handler) {
+    if(INTERRUPT_HANDLERS[irq] != default_interrupt_handler) {
+        return "Interrupt handler is already configured";
+    }
+    INTERRUPT_HANDLERS[irq] = handler;
+    return NULL;
+}
+
 static size_t REPORTED_SPURIOUS_INTERRUPTS = 0;
 
 void interrupts_health_check() {
@@ -89,4 +99,22 @@ void interrupts_health_check() {
 
     printlnf("Got %d spurious interrupts.", spurious_interrupts - REPORTED_SPURIOUS_INTERRUPTS);
     REPORTED_SPURIOUS_INTERRUPTS = spurious_interrupts;
+}
+
+void enable_interrupts() {
+    asm volatile ("sti");
+}
+
+void disable_interrupts() {
+    asm volatile ("cli");
+}
+
+bool interrupts_enabled() {
+    register_t flags;
+    asm (
+        "pushf\n\t"
+        "pop %[flags]"
+        : [flags] "=r"(flags)
+    );
+    return (flags & (1 << 9)) != 0;
 }
