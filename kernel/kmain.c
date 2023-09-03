@@ -4,6 +4,7 @@
 #include "keyboard.h"
 #include "misc.h"
 #include "multiboot.h"
+#include "pit.h"
 #include "pm.h"
 #include "textio.h"
 #include "vm.h"
@@ -47,6 +48,10 @@ static error __must_check configure(const MultibootInfo* multiboot_info) {
         return err;
     }
 
+    if((err = configure_pit())) {
+        return err;
+    }
+
     if((err = configure_keyboard())) {
         return err;
     }
@@ -65,6 +70,6 @@ void kmain(const MultibootInfo* multiboot_info) {
 
     while(true) {
         interrupts_health_check();
-        asm volatile ("hlt");
+        halt();
     }
 }

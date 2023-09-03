@@ -1,7 +1,9 @@
 #include <stdarg.h>
 #include <types.h>
 
+#include "interrupts.h"
 #include "misc.h"
+#include "pit.h"
 #include "textio.h"
 
 u8 inb(u16 port) {
@@ -28,10 +30,13 @@ void memzero(void* ptr, size_t size) {
 }
 
 void halt() {
-    asm volatile ("cli");
+    asm volatile ("hlt");
+}
 
-    while(true) {
-        asm volatile ("hlt");
+void sleep(time_ms_t duration) {
+    time_ms_t deadline = uptime() + duration;
+    while(uptime() < deadline) {
+        halt();
     }
 }
 
@@ -44,5 +49,9 @@ void panic(const char* s, ...) {
     va_end(args);
 
     printf("\n");
-    halt();
+
+    disable_interrupts();
+    while(true) {
+        halt();
+    }
 }

@@ -9,6 +9,7 @@ void outb(u16 port, u8 value);
 void memzero(void* ptr, size_t size);
 
 void halt();
+void sleep(time_ms_t duration);
 void panic(const char* s, ...);
 
 #endif

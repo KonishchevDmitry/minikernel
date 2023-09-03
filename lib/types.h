@@ -18,6 +18,7 @@ typedef __SIZE_TYPE__   size_t;
 typedef __INTPTR_TYPE__ ssize_t;
 
 typedef unsigned long register_t;
+typedef i64 time_ms_t;
 
 typedef const char* error;
 
