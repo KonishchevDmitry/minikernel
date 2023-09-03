@@ -37,7 +37,7 @@ void configure_vga() {
     VGA.pos = ((u16) high_pos) << 8 | low_pos;
 }
 
-static void move_cursor() {
+void move_cursor() {
     u16 pos = VGA.pos;
 
     outb(CRT_INDEX_REGISTER, 0x0F);

@@ -216,15 +216,20 @@ void printf_args(const char* s, va_list args) {
 
 void printf(const char* s, ...) {
     va_list args;
+
     va_start(args, s);
     printf_args(s, args);
     va_end(args);
+
+    move_cursor();
 }
 
 void printlnf(const char* s, ...) {
     va_list args;
+
     va_start(args, s);
     printf_args(s, args);
     va_end(args);
+
     printc('\n');
 }

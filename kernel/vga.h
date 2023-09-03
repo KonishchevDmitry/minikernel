@@ -3,5 +3,6 @@
 
 void configure_vga();
 void printc_vga(char c);
+void move_cursor();
 
 #endif

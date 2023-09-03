@@ -1,11 +1,11 @@
 #include <types.h>
 
 #include "interrupts.h"
-#include "keyboard.h"
 #include "misc.h"
 #include "multiboot.h"
 #include "pit.h"
 #include "pm.h"
+#include "ps2.h"
 #include "textio.h"
 #include "vm.h"
 
