@@ -8,7 +8,8 @@ ASFLAGS := -c -g -Wall -Wextra -Werror
 CFLAGS := $(ASFLAGS) -march=i386 -Os -nostdlib -fno-builtin -ffreestanding -fno-stack-protector -fno-pie -I ../lib
 LDFLAGS := -m elf_i386
 
-HEADERS := $(wildcard *.h ../lib/*.h)
+MODULES := . keyboard
+HEADERS := $(foreach dir,$(MODULES) ../lib,$(wildcard $(dir)/*.h))
 
 $(BUILD_DIR)/kernel.img: $(BUILD_DIR)/kernel.bin
 	@set -eu; \
@@ -24,14 +25,19 @@ $(BUILD_DIR)/kernel.bin: $(BUILD_DIR)/kernel
 	objcopy -O binary --set-section-flags .bss=alloc,load,contents $< $@
 
 REAL_MODE_OBJECTS := kernel16_asm libasm_real_mode bootstrap16_asm multiboot16 gdt16 idt16_asm
-PROTECTED_MODE_OBJECTS := interrupts kmain misc multiboot pic pit pm ps2 textio vga vm
+PROTECTED_MODE_OBJECTS := interrupts kmain misc multiboot pic pit pm ps2 textio vga vm \
+                          keyboard_keys
 
 # Requires gcc-multilib package
 $(BUILD_DIR)/kernel: $(patsubst %, $(BUILD_DIR)/%.o, $(REAL_MODE_OBJECTS) $(PROTECTED_MODE_OBJECTS))
 	ld $(LDFLAGS) --section-start=.text=0x7E00 --omagic -o $@ $^ $$(gcc -m32 $(CFLAGS) -print-libgcc-file-name)
 
-idt.S: generate-idt
-	./generate-idt
+idt.S: ./generate-idt
+	$<
+
+keyboard/keys.c: keyboard/keys.h
+keyboard/keys.h: keyboard/generate-keys
+	$<
 
 $(BUILD_DIR)/libasm_real_mode.o: $(BUILD_DIR)/libasm16.o
 	objcopy --prefix-symbols=real_mode_ $< $@
@@ -45,8 +51,11 @@ $(BUILD_DIR)/%_asm.o: %.S
 $(BUILD_DIR)/%16.o: %16.c $(HEADERS)
 	gcc -m16 -mgeneral-regs-only $(CFLAGS) -o $@ $<
 
-$(BUILD_DIR)/%.o: %.c $(HEADERS)
-	gcc -m32 $(CFLAGS) -o $@ $<
+define c_object_target
+$$(BUILD_DIR)/$(patsubst ._,,$1_)%.o: $1/%.c $$(HEADERS)
+	gcc -m32 $$(CFLAGS) -o $$@ $$<
+endef
+$(foreach module,$(MODULES),$(eval $(call c_object_target,$(module))))
 
 $(BUILD_DIR):
 	[ -d $(BUILD_DIR) ] || mkdir $(BUILD_DIR)
