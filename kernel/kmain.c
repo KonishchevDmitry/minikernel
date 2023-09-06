@@ -1,6 +1,7 @@
 #include <types.h>
 
 #include "interrupts.h"
+#include "keyboard/keyboard.h"
 #include "misc.h"
 #include "multiboot.h"
 #include "pit.h"
@@ -70,6 +71,13 @@ void kmain(const MultibootInfo* multiboot_info) {
 
     while(true) {
         interrupts_health_check();
+        keyboard_health_check();
+
+        char input;
+        if(keyboard_read(&input)) {
+            printf("%c", input);
+        }
+
         halt();
     }
 }

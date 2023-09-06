@@ -31,7 +31,7 @@ static_assert(sizeof(IdtEntry) == IDT_ENTRY_SIZE, "Unexpected IDT entry size");
 
 extern IdtEntry IDT[IDT_MAX_ENTRIES];
 
-static volatile size_t TOTAL_SPURIOUS_INTERRUPTS = 0;
+static volatile register_t TOTAL_SPURIOUS_INTERRUPTS = 0;
 static InterruptHandler INTERRUPT_HANDLERS[IDT_MAX_ENTRIES];
 
 #include "isr_start.h"

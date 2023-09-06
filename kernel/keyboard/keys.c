@@ -3,7 +3,7 @@
 #include "keys.h"
 
 u8 KEY_TABLE[94] = {
-    [0x0D] = '\t',
+    [0x0D] = KEY_TAB,
     [0x0E] = '`',
     [0x12] = KEY_LEFT_SHIFT,
     [0x15] = 'q',

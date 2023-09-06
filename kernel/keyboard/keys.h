@@ -3,8 +3,11 @@
 #include <types.h>
 
 typedef enum {
-    KEY_LEFT_SHIFT = 0x80,
-    KEY_RIGHT_SHIFT = 0x81,
+    SPECIAL_KEY_START = 128,
+
+    KEY_TAB = 0x80,
+    KEY_LEFT_SHIFT = 0x81,
+    KEY_RIGHT_SHIFT = 0x82,
 } Key;
 
 extern u8 KEY_TABLE[94];

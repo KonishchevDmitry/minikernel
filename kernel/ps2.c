@@ -3,6 +3,7 @@
 // * http://www.brokenthorn.com/Resources/OSDev19.html
 
 #include "interrupts.h"
+#include "keyboard/keyboard.h"
 #include "misc.h"
 #include "pic.h"
 #include "pit.h"
@@ -42,7 +43,7 @@ enum Configuration {
 
 #include "isr_start.h"
     static void interrupt_handler(irq_t) {
-        printlnf("A key pressed.");
+        keyboard_interrupt_handler(inb(DATA_PORT));
     }
 #include "isr_end.h"
 

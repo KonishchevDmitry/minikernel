@@ -13,6 +13,8 @@ HEADER_TEMPLATE = """\
 #include <types.h>
 
 typedef enum {{
+    SPECIAL_KEY_START = {special_key_start},
+
     {keys}
 }} Key;
 
@@ -33,11 +35,10 @@ u8 KEY_TABLE[{size}] = {{
 
 KEY_MAP_TEMPLATE = "[0x{code:02X}] = {value},"
 
-SPECIAL_KEYS = {"left shift", "right shift"}
+SPECIAL_KEYS = {"left shift", "right shift", "tab"}
 SPECIAL_MAPPING = {
     "enter": r"\n",
     "space": r" ",
-    "tab":   r"\t"
 }
 
 
@@ -50,7 +51,8 @@ def generate():
 
     mapping = []
     special_keys = []
-    next_special_key_id = 128
+    special_key_start_id = 128
+    next_special_key_id = special_key_start_id
 
     key_prefix = "KEY_"
     pressed_suffix = " pressed"
@@ -111,6 +113,7 @@ def generate():
         generator=generator,
         keys="\n    ".join(KEY_TEMPLATE.format(name=name, value=value) for (name, value) in special_keys),
         size=size,
+        special_key_start=special_key_start_id,
     )
 
     code_data = CODE_TEMPLATE.format(
